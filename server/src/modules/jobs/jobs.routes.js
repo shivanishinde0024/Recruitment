@@ -8,8 +8,15 @@ const {
   assignStaffSchema
 } = require('./jobs.schema');
 const jobsController = require('./jobs.controller');
+const mappingsController = require('../mappings/mappings.controller');
 
 const router = express.Router();
+
+// Retrieve suggested candidates ranked by match score
+router.get('/:jobId/suggested-candidates', authenticate, requireRole('admin', 'staff'), mappingsController.getSuggested);
+
+// Retrieve candidates mapped to job
+router.get('/:jobId/candidates', authenticate, mappingsController.list);
 
 // Create new job requirement (Company or Admin/Staff)
 router.post('/', authenticate, validate(createJobSchema), jobsController.create);

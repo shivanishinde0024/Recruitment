@@ -8,6 +8,7 @@ const companiesRoutes = require('./modules/companies/companies.routes');
 const notificationsRoutes = require('./modules/notifications/notifications.routes');
 const jobsRoutes = require('./modules/jobs/jobs.routes');
 const candidatesRoutes = require('./modules/candidates/candidates.routes');
+const mappingsRoutes = require('./modules/mappings/mappings.routes');
 
 // System Health Check
 router.get('/health', (req, res) => {
@@ -26,5 +27,6 @@ router.use('/companies', companiesRoutes);
 router.use('/notifications', notificationsRoutes);
 router.use('/jobs', jobsRoutes);
 router.use('/candidates', candidatesRoutes);
+router.use('/mappings', mappingsRoutes);
 
 module.exports = router;

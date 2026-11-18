@@ -91,7 +91,13 @@ export default function CompanyJobDetailPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-2 align-items-center">
+            <Link
+              href={`/company/jobs/${job.id}/candidates`}
+              className="btn btn-sm btn-primary"
+            >
+              Review Candidates ({job.submitted_count || 0}) →
+            </Link>
             {job.status === 'open' && (
               <button
                 type="button"

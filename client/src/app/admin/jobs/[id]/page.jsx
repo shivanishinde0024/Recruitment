@@ -110,10 +110,10 @@ export default function AdminJobDetailPage() {
 
           <div className="d-flex gap-2">
             <Link
-              href={`/admin/candidates?jobId=${job.id}`}
+              href={`/admin/jobs/${job.id}/candidates`}
               className="btn btn-primary btn-sm px-3"
             >
-              Source & Map Candidates →
+              Candidate Pipeline & Matching →
             </Link>
           </div>
         </div>

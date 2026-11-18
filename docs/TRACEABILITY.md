@@ -41,14 +41,14 @@ Status values: `Planned` | `In Progress` | `Verified` | `Not met` (with reason).
 | **REQ-CND-04** | Authenticated private resume file streaming endpoint (`GET /candidates/:id/resume`) | Guide §8.6, §10.4, §11.16 | Phase 5 | P5-T3 | `candidates.test.js` | Verified |
 | **REQ-CND-05** | Bulk candidate upload via Excel spreadsheet + Zip archive of resumes with detailed row-by-row error report | Guide §10.4.1; Master §6 | Phase 5 | P5-T4 | `candidates.test.js` (F5) | Verified |
 | **REQ-CND-06** | Staff edit boundary: Staff can only edit candidates they personally uploaded | Master §9.8; Guide §11.19 | Phase 5 | P5-T5 | `candidates.test.js` | Verified |
-| **REQ-MAP-01** | Candidate matching score algorithm (skills 50, experience 25, location 15, qualification 10) | Guide §9.8; PDF §4 | Phase 6 | P6-T1 | `matching.service.spec.ts` (F6) | Planned |
-| **REQ-MAP-02** | Suggested candidates endpoint (`GET /jobs/:id/suggested-candidates`) with top 50 match scores | Guide §9.8, §10.3 | Phase 6 | P6-T1 | `jobs.suggested.spec.ts` (F6) | Planned |
-| **REQ-MAP-03** | Candidate to job mapping (single & multi) with duplicate skip and notification dispatch | Guide §10.5; PDF §3 | Phase 6 | P6-T2 | `mapping.create.spec.ts` (F6) | Planned |
-| **REQ-MAP-04** | Auto job status recomputation (`open` -> `in_progress` -> `fulfilled` -> `in_progress`) | Guide §9.7, §11.7; Master §6 | Phase 6 | P6-T2 | `jobStatus.recompute.spec.ts` (F6, F8, F9) | Planned |
-| **REQ-MAP-05** | Company candidate review interface with actions (`viewed`, `shortlisted`, `confirmed`, `rejected`, `hold`) | Guide §6.3, §10.5; PDF §4 | Phase 6 | P6-T3 | `mapping.review.spec.ts` (F7) | Planned |
-| **REQ-MAP-06** | Race-safe candidate confirmation using row locking (`FOR UPDATE`) inside transaction | Master §9.11; Guide §10.5 | Phase 6 | P6-T4 | `mapping.confirm.race.spec.ts` (F8) | Planned |
-| **REQ-MAP-07** | Strict candidate contact masking before confirmation (`hide_candidate_contact_until_confirmed`) | Master §9.7; Guide §11.15 | Phase 6 | P6-T5 | `candidate.masking.spec.ts` (F7) | Planned |
-| **REQ-MAP-08** | Withdrawal of submitted candidate by staff (only allowed while status is `submitted`) | Guide §6.3, §10.5, §11.17 | Phase 6 | P6-T6 | `mapping.withdraw.spec.ts` | Planned |
+| **REQ-MAP-01** | Candidate matching score algorithm (skills 50, experience 25, location 15, qualification 10) | Guide §9.8; PDF §4 | Phase 6 | P6-T1 | `mappings.test.js` (F6) | Verified |
+| **REQ-MAP-02** | Suggested candidates endpoint (`GET /jobs/:id/suggested-candidates`) with top 50 match scores | Guide §9.8, §10.3 | Phase 6 | P6-T1 | `mappings.test.js` (F6) | Verified |
+| **REQ-MAP-03** | Candidate to job mapping (single & multi) with duplicate skip and notification dispatch | Guide §10.5; PDF §3 | Phase 6 | P6-T2 | `mappings.test.js` (F6) | Verified |
+| **REQ-MAP-04** | Auto job status recomputation (`open` -> `in_progress` -> `fulfilled` -> `in_progress`) | Guide §9.7, §11.7; Master §6 | Phase 6 | P6-T2 | `mappings.test.js` (F6, F8, F9) | Verified |
+| **REQ-MAP-05** | Company candidate review interface with actions (`viewed`, `shortlisted`, `confirmed`, `rejected`, `hold`) | Guide §6.3, §10.5; PDF §4 | Phase 6 | P6-T3 | `mappings.test.js` (F7) | Verified |
+| **REQ-MAP-06** | Race-safe candidate confirmation using row locking (`FOR UPDATE`) inside transaction | Master §9.11; Guide §10.5 | Phase 6 | P6-T4 | `mappings.test.js` (F8) | Verified |
+| **REQ-MAP-07** | Strict candidate contact masking before confirmation (`hide_candidate_contact_until_confirmed`) | Master §9.7; Guide §11.15 | Phase 6 | P6-T5 | `mappings.test.js` (F7) | Verified |
+| **REQ-MAP-08** | Withdrawal of submitted candidate by staff (only allowed while status is `submitted`) | Guide §6.3, §10.5, §11.17 | Phase 6 | P6-T6 | `mappings.test.js` | Verified |
 | **REQ-DSH-01** | Admin Company-Wise dashboard with cards, charts, urgent worklists, and decoupled SQL aggregation | Master §9.1; Guide §14.1, §14.2 | Phase 7 | P7-T1 | `dashboard.admin.spec.ts` | Planned |
 | **REQ-DSH-02** | Admin company drill-down view showing company's jobs and mapped candidates | Guide §10.8, §14.1; PDF §6 | Phase 7 | P7-T1 | `dashboard.drilldown.spec.ts` | Planned |
 | **REQ-DSH-03** | Staff dashboard (assigned jobs, pending verifications, submission & conversion stats) | Guide §14.3; PDF §6 | Phase 7 | P7-T2 | `dashboard.staff.spec.ts` | Planned |
