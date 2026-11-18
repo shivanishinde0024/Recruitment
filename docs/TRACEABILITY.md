@@ -56,10 +56,10 @@ Status values: `Planned` | `In Progress` | `Verified` | `Not met` (with reason).
 | **REQ-DSH-05** | Exportable reports (Company-wise, Staff performance, Candidate pipeline, Time to fill) | Guide §10.9, §16.1; PDF §6 | Phase 7 | P7-T3 | `reports.test.js` (F13) | Verified |
 | **REQ-DSH-06** | Anti-formula injection on CSV/Excel exports (sanitize cells starting with `=`, `+`, `-`, `@`) | Master §8.4 | Phase 7 | P7-T3 | `reports.test.js` (F13) | Verified |
 | **REQ-DSH-07** | Daily deadline reminder cron for jobs approaching `last_date` | Guide §15.4; Master §10 | Phase 7 | P7-T4 | `reports.test.js` (F14) | Verified |
-| **REQ-AUD-01** | Centralized audit log middleware tracking create, update, delete, status_change, login, export | Guide §7, §8.8, §16.2 | Phase 8 | P8-T1 | `audit.middleware.spec.ts` (F10) | Planned |
-| **REQ-AUD-02** | Audit log viewer in Admin with JSON before/after diff inspector | Guide §13.2, §16.2 | Phase 8 | P8-T1 | `audit.ui.spec.ts` | Planned |
-| **REQ-AUD-03** | Trash and restore manager for soft-deleted companies, jobs, and candidates | Master §9.4; Guide §8.5, §13.2 | Phase 8 | P8-T2 | `trash.restore.spec.ts` (F10) | Planned |
-| **REQ-AUD-04** | System settings management with dynamic SMTP configuration and test email trigger | Guide §7, §16.3; PDF §4 | Phase 8 | P8-T3 | `settings.smtp.spec.ts` | Planned |
+| **REQ-AUD-01** | Centralized audit log middleware tracking create, update, delete, status_change, login, export | Guide §7, §8.8, §16.2 | Phase 8 | P8-T1 | `audit_settings_trash.test.js` (F10) | Verified |
+| **REQ-AUD-02** | Audit log viewer in Admin with JSON before/after diff inspector | Guide §13.2, §16.2 | Phase 8 | P8-T1 | `audit_settings_trash.test.js` | Verified |
+| **REQ-AUD-03** | Trash and restore manager for soft-deleted companies, jobs, and candidates | Master §9.4; Guide §8.5, §13.2 | Phase 8 | P8-T2 | `audit_settings_trash.test.js` (F10) | Verified |
+| **REQ-AUD-04** | System settings management with dynamic SMTP configuration and test email trigger | Guide §7, §16.3; PDF §4 | Phase 8 | P8-T3 | `audit_settings_trash.test.js` | Verified |
 | **REQ-SEC-01** | OWASP A01: Automated exhaustive RBAC matrix test across all endpoints and roles | Master §8.2 | Phase 9 | P9-T1 | `security.rbac.matrix.spec.ts` | Planned |
 | **REQ-SEC-02** | IDOR testing on every parameterized `:id` route ensuring 404 for cross-tenant access | Master §8.2; Guide §11.13 | Phase 9 | P9-T1 | `security.idor.spec.ts` (F11) | Planned |
 | **REQ-SEC-03** | Injection & XSS tests (SQL injection, stored/reflected XSS, header injection, NoSQL queries) | Master §8.3 | Phase 9 | P9-T2 | `security.injection.spec.ts` | Planned |

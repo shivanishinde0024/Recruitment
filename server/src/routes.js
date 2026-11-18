@@ -10,6 +10,9 @@ const jobsRoutes = require('./modules/jobs/jobs.routes');
 const candidatesRoutes = require('./modules/candidates/candidates.routes');
 const mappingsRoutes = require('./modules/mappings/mappings.routes');
 const reportsRoutes = require('./modules/reports/reports.routes');
+const auditRoutes = require('./modules/audit/audit.routes');
+const trashRoutes = require('./modules/trash/trash.routes');
+const settingsRoutes = require('./modules/settings/settings.routes');
 
 // System Health Check
 router.get('/health', (req, res) => {
@@ -30,5 +33,8 @@ router.use('/jobs', jobsRoutes);
 router.use('/candidates', candidatesRoutes);
 router.use('/mappings', mappingsRoutes);
 router.use('/reports', reportsRoutes);
+router.use('/audit-logs', auditRoutes);
+router.use('/trash', trashRoutes);
+router.use('/settings', settingsRoutes);
 
 module.exports = router;
