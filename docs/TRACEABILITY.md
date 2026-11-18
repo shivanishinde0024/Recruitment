@@ -17,11 +17,11 @@ Status values: `Planned` | `In Progress` | `Verified` | `Not met` (with reason).
 | **REQ-AUT-05** | Password reset flow: forgot password with anti-enumeration (always 200), single-use token valid 30m | Guide §10.1; Master §8 | Phase 1 | P1-T8 | `auth.reset.spec.ts` (F12) | Verified |
 | **REQ-AUT-06** | Change password and update profile (`/auth/me`, `/auth/change-password`) | Guide §10.1; PDF §4 | Phase 1 | P1-T8 | `auth.profile.spec.ts` | Verified |
 | **REQ-AUT-07** | Frontend AuthContext, `useAuth` hook, role-based route guard in Next.js `middleware.js` | Guide §12.1, §12.3 | Phase 1 | P1-T9 | Client auth guard integration test | Verified |
-| **REQ-MST-01** | Generic Masters REST API (`/masters/:type`) supporting 12 master entities with parent relations | Guide §7, §10.6; PDF §2 | Phase 2 | P2-T1 | `masters.api.spec.ts` (F10) | Planned |
-| **REQ-MST-02** | Master delete prevention: reject deletion (422) if record is referenced by active records | Master §10; Guide §10.6 | Phase 2 | P2-T1 | `masters.guard.spec.ts` (F10) | Planned |
-| **REQ-MST-03** | Cascading location endpoints and frontend selectors (Country -> State -> City) | Guide §10.6, §13.5 | Phase 2 | P2-T2 | `location.cascade.spec.ts` | Planned |
-| **REQ-MST-04** | Staff & Admin User management (CRUD, status toggle, reset password, last-admin protection) | Guide §10.7, §11.18; PDF §2 | Phase 2 | P2-T3 | `users.admin.spec.ts` | Planned |
-| **REQ-MST-05** | Reusable frontend components: `DataTable`, `FilterBar`, `ConfirmModal`, `StatusBadge` | Master §7; Guide §12.4, §13.5 | Phase 2 | P2-T4 | UI component test suite | Planned |
+| **REQ-MST-01** | Generic Masters REST API (`/masters/:type`) supporting 12 master entities with parent relations | Guide §7, §10.6; PDF §2 | Phase 2 | P2-T1 | `masters.api.spec.ts` (F10) | Verified |
+| **REQ-MST-02** | Master delete prevention: reject deletion (422) if record is referenced by active records | Master §10; Guide §10.6 | Phase 2 | P2-T1 | `masters.guard.spec.ts` (F10) | Verified |
+| **REQ-MST-03** | Cascading location endpoints and frontend selectors (Country -> State -> City) | Guide §10.6, §13.5 | Phase 2 | P2-T2 | `location.cascade.spec.ts` | Verified |
+| **REQ-MST-04** | Staff & Admin User management (CRUD, status toggle, reset password, last-admin protection) | Guide §10.7, §11.18; PDF §2 | Phase 2 | P2-T3 | `users.admin.spec.ts` | Verified |
+| **REQ-MST-05** | Reusable frontend components: `DataTable`, `FilterBar`, `ConfirmModal`, `StatusBadge` | Master §7; Guide §12.4, §13.5 | Phase 2 | P2-T4 | UI component test suite | Verified |
 | **REQ-CMP-01** | Multi-step Company Registration with document uploads (GST, PAN, Incorporation, Logo) | Guide §10.1, §13.1; PDF §4 | Phase 3 | P3-T1 | `company.register.spec.ts` (F1) | Planned |
 | **REQ-CMP-02** | Pending verification state enforcement: company can only view pending status & edit profile/docs | Master §4; Guide §11.1 | Phase 3 | P3-T2 | `company.pending.spec.ts` (F1) | Planned |
 | **REQ-CMP-03** | Company verification workflows by Admin/Staff (Approve, Reject, Need Info, Suspend) with mandatory remarks | Guide §6.1, §10.2; PDF §4 | Phase 3 | P3-T3 | `company.verify.spec.ts` (F2, F3) | Planned |
