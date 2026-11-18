@@ -124,6 +124,43 @@ class InMemoryTable {
       });
     }
 
+    if (include.job_category && record.job_category_id) {
+      enriched.job_category = await this.client.job_categories.findUnique({
+        where: { id: record.job_category_id }
+      });
+    }
+
+    if (include.employment_type && record.employment_type_id) {
+      enriched.employment_type = await this.client.employment_types.findUnique({
+        where: { id: record.employment_type_id }
+      });
+    }
+
+    if (include.qualification && record.qualification_id) {
+      enriched.qualification = await this.client.qualifications.findUnique({
+        where: { id: record.qualification_id }
+      });
+    }
+
+    if (include.assigned_user && record.assigned_to) {
+      enriched.assigned_user = await this.client.users.findUnique({
+        where: { id: record.assigned_to }
+      });
+    }
+
+    if (include.skills) {
+      enriched.skills = await this.client.job_skills.findMany({
+        where: { job_id: record.id },
+        include: include.skills.include
+      });
+    }
+
+    if (include.skill && record.skill_id) {
+      enriched.skill = await this.client.skills.findUnique({
+        where: { id: record.skill_id }
+      });
+    }
+
     return enriched;
   }
 

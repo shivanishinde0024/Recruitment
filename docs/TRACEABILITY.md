@@ -28,13 +28,13 @@ Status values: `Planned` | `In Progress` | `Verified` | `Not met` (with reason).
 | **REQ-CMP-04** | Company verification logs audit trail (`company_verification_logs`) recording verifier & remarks | Guide §6.1, §7; PDF §4 | Phase 3 | P3-T3 | `companies.test.js` (F2) | Verified |
 | **REQ-CMP-05** | Re-verification flag triggered when approved company modifies name, GST, or PAN | Master §9.9; Guide §10.2 | Phase 3 | P3-T4 | `companies.test.js` | Verified |
 | **REQ-CMP-06** | In-app and Email notifications for company verification lifecycle events | Guide §15.2; PDF §4 | Phase 3 | P3-T5 | `companies.test.js` (F2) | Verified |
-| **REQ-JOB-01** | Job creation by approved Company, Admin, or Staff with auto-generated sequential `job_code` | Master §9.2; Guide §9.6, §10.3 | Phase 4 | P4-T1 | `jobs.create.spec.ts` (F4) | Planned |
-| **REQ-JOB-02** | Concurrency-safe job code generation using sequence lock table | Master §9.2 | Phase 4 | P4-T1 | `jobs.code.race.spec.ts` (F4) | Planned |
-| **REQ-JOB-03** | Rich text sanitization (`sanitize-html`) on job description and responsibilities | Master §8.3; Guide §10.3 | Phase 4 | P4-T2 | `jobs.xss.sanitize.spec.ts` | Planned |
-| **REQ-JOB-04** | Job validation rules (`positions_required >= 1`, `exp_max >= exp_min`, `salary_max >= salary_min`) | Guide §11.6 | Phase 4 | P4-T2 | `jobs.validation.spec.ts` | Planned |
-| **REQ-JOB-05** | Staff assignment to job by Admin (`PATCH /jobs/:id/assign-staff`) with staff notification | Guide §10.3, §11.9; PDF §4 | Phase 4 | P4-T3 | `jobs.assign.spec.ts` (F5) | Planned |
-| **REQ-JOB-06** | Manual job status transitions (`open`, `on_hold`, `closed`) and position reduction guard | Guide §10.3, §11.8 | Phase 4 | P4-T3 | `jobs.status.guard.spec.ts` | Planned |
-| **REQ-JOB-07** | Job detail computed metrics (positions, submitted, confirmed, pending, remaining) | Guide §10.3.1; PDF §4 | Phase 4 | P4-T4 | `jobs.counts.spec.ts` | Planned |
+| **REQ-JOB-01** | Job creation by approved Company, Admin, or Staff with auto-generated sequential `job_code` | Master §9.2; Guide §9.6, §10.3 | Phase 4 | P4-T1 | `jobs.test.js` (F4) | Verified |
+| **REQ-JOB-02** | Concurrency-safe job code generation using sequence lock table | Master §9.2 | Phase 4 | P4-T1 | `jobs.test.js` (F4) | Verified |
+| **REQ-JOB-03** | Rich text sanitization (`sanitize-html`) on job description and responsibilities | Master §8.3; Guide §10.3 | Phase 4 | P4-T2 | `jobs.test.js` | Verified |
+| **REQ-JOB-04** | Job validation rules (`positions_required >= 1`, `exp_max >= exp_min`, `salary_max >= salary_min`) | Guide §11.6 | Phase 4 | P4-T2 | `jobs.test.js` | Verified |
+| **REQ-JOB-05** | Staff assignment to job by Admin (`PATCH /jobs/:id/assign-staff`) with staff notification | Guide §10.3, §11.9; PDF §4 | Phase 4 | P4-T3 | `jobs.test.js` (F5) | Verified |
+| **REQ-JOB-06** | Manual job status transitions (`open`, `on_hold`, `closed`) and position reduction guard | Guide §10.3, §11.8 | Phase 4 | P4-T3 | `jobs.test.js` | Verified |
+| **REQ-JOB-07** | Job detail computed metrics (positions, submitted, confirmed, pending, remaining) | Guide §10.3.1; PDF §4 | Phase 4 | P4-T4 | `jobs.test.js` | Verified |
 | **REQ-CND-01** | Candidate profile management (CRUD) with single resume file upload | Guide §10.4; PDF §4 | Phase 5 | P5-T1 | `candidate.crud.spec.ts` (F5) | Planned |
 | **REQ-CND-02** | Candidate duplicate detection by email OR mobile returning HTTP 409 conflict | Guide §10.4, §11.11 | Phase 5 | P5-T1 | `candidate.dup.spec.ts` (F5) | Planned |
 | **REQ-CND-03** | FULLTEXT candidate search with graceful parameterized LIKE fallback for short tokens | Master §9.6; Guide §7, §10.4 | Phase 5 | P5-T2 | `candidate.search.spec.ts` | Planned |
