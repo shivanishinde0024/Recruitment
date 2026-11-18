@@ -162,6 +162,12 @@ class InMemoryTable {
       });
     }
 
+    if (include.assignedStaff && record.assigned_to) {
+      enriched.assignedStaff = await this.client.users.findUnique({
+        where: { id: record.assigned_to }
+      });
+    }
+
     if (include.uploader && record.uploaded_by) {
       enriched.uploader = await this.client.users.findUnique({
         where: { id: record.uploaded_by }

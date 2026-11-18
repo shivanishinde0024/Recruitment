@@ -49,13 +49,13 @@ Status values: `Planned` | `In Progress` | `Verified` | `Not met` (with reason).
 | **REQ-MAP-06** | Race-safe candidate confirmation using row locking (`FOR UPDATE`) inside transaction | Master §9.11; Guide §10.5 | Phase 6 | P6-T4 | `mappings.test.js` (F8) | Verified |
 | **REQ-MAP-07** | Strict candidate contact masking before confirmation (`hide_candidate_contact_until_confirmed`) | Master §9.7; Guide §11.15 | Phase 6 | P6-T5 | `mappings.test.js` (F7) | Verified |
 | **REQ-MAP-08** | Withdrawal of submitted candidate by staff (only allowed while status is `submitted`) | Guide §6.3, §10.5, §11.17 | Phase 6 | P6-T6 | `mappings.test.js` | Verified |
-| **REQ-DSH-01** | Admin Company-Wise dashboard with cards, charts, urgent worklists, and decoupled SQL aggregation | Master §9.1; Guide §14.1, §14.2 | Phase 7 | P7-T1 | `dashboard.admin.spec.ts` | Planned |
-| **REQ-DSH-02** | Admin company drill-down view showing company's jobs and mapped candidates | Guide §10.8, §14.1; PDF §6 | Phase 7 | P7-T1 | `dashboard.drilldown.spec.ts` | Planned |
-| **REQ-DSH-03** | Staff dashboard (assigned jobs, pending verifications, submission & conversion stats) | Guide §14.3; PDF §6 | Phase 7 | P7-T2 | `dashboard.staff.spec.ts` | Planned |
-| **REQ-DSH-04** | Company dashboard (positions vs confirmed, pending review candidates, recent activity) | Guide §14.4; PDF §6 | Phase 7 | P7-T2 | `dashboard.company.spec.ts` | Planned |
-| **REQ-DSH-05** | Exportable reports (Company-wise, Staff performance, Candidate pipeline, Time to fill) | Guide §10.9, §16.1; PDF §6 | Phase 7 | P7-T3 | `reports.export.spec.ts` (F13) | Planned |
-| **REQ-DSH-06** | Anti-formula injection on CSV/Excel exports (sanitize cells starting with `=`, `+`, `-`, `@`) | Master §8.4 | Phase 7 | P7-T3 | `reports.formula.injection.spec.ts` (F13) | Planned |
-| **REQ-DSH-07** | Daily deadline reminder cron for jobs approaching `last_date` | Guide §15.4; Master §10 | Phase 7 | P7-T4 | `cron.deadline.spec.ts` (F14) | Planned |
+| **REQ-DSH-01** | Admin Company-Wise dashboard with cards, charts, urgent worklists, and decoupled SQL aggregation | Master §9.1; Guide §14.1, §14.2 | Phase 7 | P7-T1 | `reports.test.js` | Verified |
+| **REQ-DSH-02** | Admin company drill-down view showing company's jobs and mapped candidates | Guide §10.8, §14.1; PDF §6 | Phase 7 | P7-T1 | `reports.test.js` | Verified |
+| **REQ-DSH-03** | Staff dashboard (assigned jobs, pending verifications, submission & conversion stats) | Guide §14.3; PDF §6 | Phase 7 | P7-T2 | `reports.test.js` | Verified |
+| **REQ-DSH-04** | Company dashboard (positions vs confirmed, pending review candidates, recent activity) | Guide §14.4; PDF §6 | Phase 7 | P7-T2 | `reports.test.js` | Verified |
+| **REQ-DSH-05** | Exportable reports (Company-wise, Staff performance, Candidate pipeline, Time to fill) | Guide §10.9, §16.1; PDF §6 | Phase 7 | P7-T3 | `reports.test.js` (F13) | Verified |
+| **REQ-DSH-06** | Anti-formula injection on CSV/Excel exports (sanitize cells starting with `=`, `+`, `-`, `@`) | Master §8.4 | Phase 7 | P7-T3 | `reports.test.js` (F13) | Verified |
+| **REQ-DSH-07** | Daily deadline reminder cron for jobs approaching `last_date` | Guide §15.4; Master §10 | Phase 7 | P7-T4 | `reports.test.js` (F14) | Verified |
 | **REQ-AUD-01** | Centralized audit log middleware tracking create, update, delete, status_change, login, export | Guide §7, §8.8, §16.2 | Phase 8 | P8-T1 | `audit.middleware.spec.ts` (F10) | Planned |
 | **REQ-AUD-02** | Audit log viewer in Admin with JSON before/after diff inspector | Guide §13.2, §16.2 | Phase 8 | P8-T1 | `audit.ui.spec.ts` | Planned |
 | **REQ-AUD-03** | Trash and restore manager for soft-deleted companies, jobs, and candidates | Master §9.4; Guide §8.5, §13.2 | Phase 8 | P8-T2 | `trash.restore.spec.ts` (F10) | Planned |
