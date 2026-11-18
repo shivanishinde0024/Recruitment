@@ -17,12 +17,12 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Skip retry on auth endpoints to prevent infinite redirect loop
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !originalRequest.url?.includes('/auth/login') &&
-      !originalRequest.url?.includes('/auth/refresh')
-    ) {
+    const isAuthEndpoint = 
+      originalRequest.url?.includes('/auth/login') ||
+      originalRequest.url?.includes('/auth/refresh') ||
+      originalRequest.url?.includes('/auth/me');
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
       if (!refreshPromise) {
@@ -34,7 +34,11 @@ api.interceptors.response.use(
           .catch((refreshErr) => {
             refreshPromise = null;
             if (typeof window !== 'undefined') {
-              window.location.href = '/login?session_expired=1';
+              const path = window.location.pathname;
+              const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password'].some(p => path.startsWith(p));
+              if (!isAuthPage) {
+                window.location.href = '/login?session_expired=1';
+              }
             }
             return Promise.reject(refreshErr);
           });

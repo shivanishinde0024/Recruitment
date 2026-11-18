@@ -37,10 +37,11 @@ if (NODE_ENV !== 'test') {
   app.use(morgan('combined'));
 }
 
-// Rate Limiting on Auth Endpoints
+// Rate Limiting on Sensitive Auth Endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: NODE_ENV === 'production' ? 100 : 5000,
+  skip: () => NODE_ENV === 'test',
   message: {
     success: false,
     message: 'Too many requests from this IP. Please try again after 15 minutes.'
@@ -49,7 +50,8 @@ const authLimiter = rateLimit({
   legacyHeaders: false
 });
 
-app.use('/api/v1/auth', authLimiter);
+app.use('/api/v1/auth/login', authLimiter);
+app.use('/api/v1/auth/forgot-password', authLimiter);
 
 // Mount API Documentation in non-production
 if (NODE_ENV !== 'production') {
