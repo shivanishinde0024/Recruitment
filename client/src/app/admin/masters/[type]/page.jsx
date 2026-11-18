@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import RoleLayout from '../../../../components/layout/RoleLayout';
 import DataTable from '../../../../components/tables/DataTable';
 import FilterBar from '../../../../components/forms/FilterBar';
 import ConfirmModal from '../../../../components/modals/ConfirmModal';
@@ -175,7 +174,7 @@ export default function MasterEntityPage() {
   ];
 
   return (
-    <RoleLayout>
+    <>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h1 className="h3 fw-bold mb-1">Master Data Management</h1>
@@ -278,7 +277,7 @@ export default function MasterEntityPage() {
         confirmVariant="danger"
         loading={modalLoading}
       />
-    </RoleLayout>
+    </>
   );
 }
 

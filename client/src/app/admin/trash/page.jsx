@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import RoleLayout from '../../../components/layout/RoleLayout';
 import api from '../../../services/api';
 
 export default function AdminTrashManagerPage() {
@@ -79,7 +78,7 @@ export default function AdminTrashManagerPage() {
   };
 
   return (
-    <RoleLayout>
+    <>
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
@@ -242,7 +241,7 @@ export default function AdminTrashManagerPage() {
           </div>
         </div>
       )}
-    </RoleLayout>
+    </>
   );
 }
 

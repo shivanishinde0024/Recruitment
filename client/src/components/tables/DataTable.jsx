@@ -77,8 +77,8 @@ export default function DataTable({
       </div>
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="d-flex justify-content-between align-items-center p-3 border-top">
-          <div className="small text-muted">
+        <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 p-3 border-top">
+          <div className="small text-muted text-center text-sm-start">
             Showing Page <strong>{pagination.page}</strong> of <strong>{pagination.totalPages}</strong> ({pagination.total} total)
           </div>
           <div className="btn-group btn-group-sm">

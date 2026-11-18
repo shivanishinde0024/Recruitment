@@ -238,3 +238,146 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* =========================================================
+   MOBILE DRAWER & RESPONSIVE LAYOUT (Left Drawer Slide-In)
+   ========================================================= */
+
+.rp-layout-container {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.rp-desktop-sidebar-wrapper {
+  flex-shrink: 0;
+  width: 260px;
+}
+
+.rp-main-wrapper {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Backdrop Overlay */
+.rp-mobile-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(14, 23, 38, 0.65);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 1040;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Slide-in Left Drawer */
+.rp-mobile-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 280px;
+  max-width: 85vw;
+  background-color: var(--rp-brand-dark);
+  z-index: 1050;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rp-mobile-drawer.open {
+  transform: translateX(0);
+}
+
+.rp-sidebar-in-drawer {
+  width: 100% !important;
+  min-height: 100% !important;
+}
+
+.rp-mobile-drawer-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #E2E8F0;
+  font-size: 1.1rem;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.rp-mobile-drawer-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+}
+
+/* =========================================================
+   RESPONSIVE SCALING ACROSS ALL DEVICE BREAKPOINTS
+   ========================================================= */
+
+@media (max-width: 767.98px) {
+  .rp-navbar {
+    padding: 0 1rem;
+    height: 58px;
+  }
+
+  .rp-navbar .small {
+    font-size: 0.8rem;
+  }
+
+  .rp-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+  }
+
+  /* Typography Scaling */
+  h1, .h1 { font-size: 1.5rem !important; }
+  h2, .h2 { font-size: 1.3rem !important; }
+  h3, .h3 { font-size: 1.15rem !important; }
+  h4, .h4 { font-size: 1.05rem !important; }
+
+  /* Touch-friendly Tap Targets */
+  .btn {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+  }
+
+  .form-control, .form-select {
+    font-size: 0.875rem;
+  }
+
+  /* Ensure Tables do not force horizontal container overflow */
+  .table-responsive {
+    border-radius: 6px;
+    border: 1px solid var(--rp-border-subtle);
+  }
+
+  .rp-table th, .rp-table td {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .rp-sidebar {
+    width: 230px;
+  }
+  .rp-desktop-sidebar-wrapper {
+    width: 230px;
+  }
+}

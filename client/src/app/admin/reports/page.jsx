@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import RoleLayout from '../../../components/layout/RoleLayout';
 import api from '../../../services/api';
 
 export default function AdminReportsPage() {
@@ -70,7 +69,7 @@ export default function AdminReportsPage() {
   const selectedConfig = reportConfigs.find((r) => r.id === reportType);
 
   return (
-    <RoleLayout>
+    <>
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
           <h1 className="h3 fw-bold mb-1 text-dark">Data Export & Analytics Reports</h1>
@@ -197,7 +196,7 @@ export default function AdminReportsPage() {
           </div>
         </div>
       </div>
-    </RoleLayout>
+    </>
   );
 }
 

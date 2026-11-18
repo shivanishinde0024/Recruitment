@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import RoleLayout from '../../../components/layout/RoleLayout';
 import api from '../../../services/api';
 
 export default function AdminSettingsPage() {
@@ -97,17 +96,15 @@ export default function AdminSettingsPage() {
 
   if (loading) {
     return (
-      <RoleLayout>
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status" />
-          <div className="text-muted small mt-2">Loading system settings...</div>
-        </div>
-      </RoleLayout>
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status" />
+        <div className="text-muted small mt-2">Loading system settings...</div>
+      </div>
     );
   }
 
   return (
-    <RoleLayout>
+    <>
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
@@ -314,7 +311,7 @@ export default function AdminSettingsPage() {
           </button>
         </div>
       </form>
-    </RoleLayout>
+    </>
   );
 }
 

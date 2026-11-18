@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate, onClose, isDrawer = false }) {
   const pathname = usePathname();
   const { user } = useAuth();
   const role = user?.role || 'admin';
@@ -19,7 +19,7 @@ export default function Sidebar() {
       { label: 'Staff Management', href: '/admin/staff', icon: '👔' },
       { label: 'Master Tables', href: '/admin/masters/skills', icon: '⚙️' },
       { label: 'Reports & Analytics', href: '/admin/reports', icon: '📈' },
-      { label: 'Audit Logs', href: '/admin/audit-logs', icon: '📜' },
+      { label: 'Audit Logs', href: '/admin/audit', icon: '📜' },
       { label: 'Settings', href: '/admin/settings', icon: '🔧' },
       { label: 'Trash Archive', href: '/admin/trash', icon: '🗑️' }
     ],
@@ -43,10 +43,22 @@ export default function Sidebar() {
   const currentNav = navItems[role] || navItems.admin;
 
   return (
-    <aside className="rp-sidebar">
-      <div className="rp-sidebar-header d-flex align-items-center gap-2">
-        <span style={{ fontSize: '1.25rem' }}>🎯</span>
-        <span>Recruitment Portal</span>
+    <aside className={`rp-sidebar ${isDrawer ? 'rp-sidebar-in-drawer' : ''}`}>
+      <div className="rp-sidebar-header d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center gap-2">
+          <span style={{ fontSize: '1.25rem' }}>🎯</span>
+          <span>Recruitment Portal</span>
+        </div>
+        {onClose && (
+          <button
+            type="button"
+            className="rp-mobile-drawer-close d-md-none"
+            onClick={onClose}
+            aria-label="Close menu drawer"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       <nav className="rp-sidebar-nav">
@@ -57,6 +69,9 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               className={`rp-nav-item ${isActive ? 'active' : ''}`}
+              onClick={() => {
+                if (onNavigate) onNavigate();
+              }}
             >
               <span>{item.icon}</span>
               <span>{item.label}</span>
