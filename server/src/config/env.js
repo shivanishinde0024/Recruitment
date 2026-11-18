@@ -1,10 +1,29 @@
-require('dotenv').config();
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Load environment from server directory or root directory
+dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const DATABASE_URL = process.env.DATABASE_URL || 'mysql://portal_user:portal_password@localhost:3306/recruitment';
+
+// Guarantee process.env has DATABASE_URL for Prisma engine
+process.env.DATABASE_URL = DATABASE_URL;
+
+const USE_IN_MEMORY_DB = process.env.USE_IN_MEMORY_DB !== undefined 
+  ? process.env.USE_IN_MEMORY_DB === 'true' 
+  : (NODE_ENV !== 'production');
+
+process.env.USE_IN_MEMORY_DB = String(USE_IN_MEMORY_DB);
 
 module.exports = {
-  NODE_ENV: process.env.NODE_ENV || 'development',
+  NODE_ENV,
   PORT: parseInt(process.env.PORT, 10) || 5000,
   CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:3000',
-  DATABASE_URL: process.env.DATABASE_URL || 'mysql://portal_user:portal_password@localhost:3306/recruitment',
+  DATABASE_URL,
+  USE_IN_MEMORY_DB,
 
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || 'dev_access_secret_at_least_64_characters_long_for_security_testing_purpose',
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'dev_refresh_secret_at_least_64_characters_long_for_security_testing_purpose',

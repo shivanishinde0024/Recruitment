@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { InMemoryPrismaClient } = require('./inMemoryPrisma');
+const { USE_IN_MEMORY_DB } = require('./env');
 
 // Global BigInt JSON serialization fix (Ruling 3.10)
 BigInt.prototype.toJSON = function () {
@@ -9,7 +10,7 @@ BigInt.prototype.toJSON = function () {
 
 let prisma;
 
-if (process.env.NODE_ENV === 'test' || process.env.USE_IN_MEMORY_DB === 'true') {
+if (process.env.NODE_ENV === 'test' || USE_IN_MEMORY_DB) {
   if (!global.__inMemoryPrisma) {
     global.__inMemoryPrisma = new InMemoryPrismaClient();
   }
