@@ -33,7 +33,7 @@ async function listTrashItems(query) {
       items.push({
         id: String(j.id),
         module: 'jobs',
-        name: j.title,
+        name: j.custom_title || j.title || 'Untitled Job',
         identifier: j.job_code,
         parent_name: j.company?.company_name || 'Unknown',
         deleted_at: j.deleted_at
@@ -50,7 +50,7 @@ async function listTrashItems(query) {
       items.push({
         id: String(cand.id),
         module: 'candidates',
-        name: `${cand.first_name} ${cand.last_name}`,
+        name: cand.name || `${cand.first_name || ''} ${cand.last_name || ''}`.trim() || 'Unnamed Candidate',
         identifier: cand.email,
         deleted_at: cand.deleted_at
       });

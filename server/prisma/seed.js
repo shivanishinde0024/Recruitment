@@ -241,6 +241,616 @@ async function seedDatabase(prisma) {
   }
 
   console.log('✓ Master tables seeded successfully');
+
+  // 5. Seed 5 Staff Members
+  const staffHash = await bcrypt.hash('Staff@123456', 12);
+  const staffData = [
+    { name: 'Priya Sharma', email: 'priya.sharma@portal.com', mobile: '+91-9820112233' },
+    { name: 'Rahul Verma', email: 'rahul.verma@portal.com', mobile: '+91-9820223344' },
+    { name: 'Ananya Iyer', email: 'ananya.iyer@portal.com', mobile: '+91-9820334455' },
+    { name: 'Vikram Malhotra', email: 'vikram.malhotra@portal.com', mobile: '+91-9820445566' },
+    { name: 'Sneha Patil', email: 'sneha.patil@portal.com', mobile: '+91-9820556677' }
+  ];
+
+  const createdStaff = [];
+  for (const s of staffData) {
+    let staffUser = await prisma.users.findFirst({ where: { email: s.email } });
+    if (!staffUser) {
+      staffUser = await prisma.users.create({
+        data: {
+          name: s.name,
+          email: s.email,
+          mobile: s.mobile,
+          password_hash: staffHash,
+          role: 'staff',
+          status: 'active'
+        }
+      });
+    }
+    createdStaff.push(staffUser);
+  }
+  console.log('✓ 5 Staff members verified/seeded');
+
+  // 6. Seed 5 Companies + Company Users
+  const companyPasswordHash = await bcrypt.hash('Company@123456', 12);
+  const itIndustry = await prisma.industries.findFirst({ where: { name: 'Information Technology & Software' } });
+  const healthIndustry = await prisma.industries.findFirst({ where: { name: 'Healthcare & Pharmaceuticals' } });
+  const logIndustry = await prisma.industries.findFirst({ where: { name: 'Logistics & Supply Chain' } });
+  const finIndustry = await prisma.industries.findFirst({ where: { name: 'Banking, Financial Services & Insurance' } });
+  const pvtType = await prisma.company_types.findFirst({ where: { name: 'Private Limited (Pvt Ltd)' } });
+  const llpType = await prisma.company_types.findFirst({ where: { name: 'Limited Liability Partnership (LLP)' } });
+
+  const adminUser = existingAdmin || (await prisma.users.findFirst({ where: { role: 'admin' } }));
+
+  const companyList = [
+    {
+      company_name: 'Acme Cloud Technologies Pvt Ltd',
+      userEmail: 'contact@acmecloud.com',
+      userName: 'Rajesh Khanna',
+      industry_id: itIndustry?.id,
+      company_type_id: pvtType?.id,
+      gst_no: '27AABCT3518Q1ZV',
+      pan_no: 'AABCT3518Q',
+      cin_no: 'U72200MH2018PTC310234',
+      company_size: '51-200',
+      status: 'approved',
+      contact_person: 'Rajesh Khanna',
+      contact_designation: 'Director of Talent Acquisition',
+      contact_email: 'contact@acmecloud.com',
+      contact_mobile: '+91-9811223344',
+      address: 'Tech Park, Tower B, Bandra Kurla Complex',
+      city_id: 1,
+      state_id: 1,
+      country_id: 1,
+      pincode: '400051',
+      website: 'https://acmecloud.example.com',
+      verified_by: adminUser?.id,
+      verified_at: new Date()
+    },
+    {
+      company_name: 'Starlight Global Healthcare LLP',
+      userEmail: 'hr@starlighthealth.io',
+      userName: 'Dr. Sunita Rao',
+      industry_id: healthIndustry?.id,
+      company_type_id: llpType?.id,
+      gst_no: '29AAHCS2948R1ZX',
+      pan_no: 'AAHCS2948R',
+      cin_no: 'AAA-1234',
+      company_size: '201-500',
+      status: 'approved',
+      contact_person: 'Dr. Sunita Rao',
+      contact_designation: 'Head of Operations',
+      contact_email: 'hr@starlighthealth.io',
+      contact_mobile: '+91-9822334455',
+      address: 'Health City Campus, Electronic City Phase 1',
+      city_id: 2,
+      state_id: 2,
+      country_id: 1,
+      pincode: '560100',
+      website: 'https://starlighthealth.example.com',
+      verified_by: adminUser?.id,
+      verified_at: new Date()
+    },
+    {
+      company_name: 'NextGen Logistics India Ltd',
+      userEmail: 'hiring@nextgenlogistics.in',
+      userName: 'Manish Pandey',
+      industry_id: logIndustry?.id,
+      company_type_id: pvtType?.id,
+      gst_no: '27AALCN9876P1ZY',
+      pan_no: 'AALCN9876P',
+      cin_no: 'U60200MH2020PLC345678',
+      company_size: '11-50',
+      status: 'pending',
+      contact_person: 'Manish Pandey',
+      contact_designation: 'Managing Partner',
+      contact_email: 'hiring@nextgenlogistics.in',
+      contact_mobile: '+91-9833445566',
+      address: 'Cargo Complex, Sector 18, Vashi',
+      city_id: 1,
+      state_id: 1,
+      country_id: 1,
+      pincode: '400703',
+      website: 'https://nextgenlogistics.example.com'
+    },
+    {
+      company_name: 'Apex FinTech Innovations',
+      userEmail: 'admin@apexfintech.com',
+      userName: 'Sanjay Aggarwal',
+      industry_id: finIndustry?.id,
+      company_type_id: pvtType?.id,
+      gst_no: '07AAPCF1122Q1ZT',
+      pan_no: 'AAPCF1122Q',
+      company_size: '11-50',
+      status: 'need_info',
+      remark: 'Please upload renewed Certificate of Incorporation with official seal.',
+      contact_person: 'Sanjay Aggarwal',
+      contact_designation: 'COO',
+      contact_email: 'admin@apexfintech.com',
+      contact_mobile: '+91-9844556677',
+      address: 'Cyber Hub, DLF Phase 2',
+      city_id: 3,
+      state_id: 3,
+      country_id: 1,
+      pincode: '122002',
+      website: 'https://apexfintech.example.com'
+    },
+    {
+      company_name: 'CyberGuard Security Labs',
+      userEmail: 'support@cyberguardlabs.com',
+      userName: 'Karan Mehra',
+      industry_id: itIndustry?.id,
+      company_type_id: pvtType?.id,
+      gst_no: '27AACCS5566M1ZR',
+      pan_no: 'AACCS5566M',
+      company_size: '1-10',
+      status: 'rejected',
+      remark: 'GST verification mismatch against national portal registry.',
+      contact_person: 'Karan Mehra',
+      contact_designation: 'Founder',
+      contact_email: 'support@cyberguardlabs.com',
+      contact_mobile: '+91-9855667788',
+      address: 'Aundh IT Park, Pune',
+      city_id: 1,
+      state_id: 1,
+      country_id: 1,
+      pincode: '411007',
+      website: 'https://cyberguardlabs.example.com'
+    }
+  ];
+
+  const createdCompanies = [];
+  for (const c of companyList) {
+    let companyUser = await prisma.users.findFirst({ where: { email: c.userEmail } });
+    if (!companyUser) {
+      companyUser = await prisma.users.create({
+        data: {
+          name: c.userName,
+          email: c.userEmail,
+          mobile: c.contact_mobile,
+          password_hash: companyPasswordHash,
+          role: 'company',
+          status: 'active'
+        }
+      });
+    }
+
+    let comp = await prisma.companies.findFirst({ where: { user_id: companyUser.id } });
+    if (!comp) {
+      comp = await prisma.companies.create({
+        data: {
+          user_id: companyUser.id,
+          company_name: c.company_name,
+          industry_id: c.industry_id,
+          company_type_id: c.company_type_id,
+          gst_no: c.gst_no,
+          pan_no: c.pan_no,
+          cin_no: c.cin_no,
+          company_size: c.company_size,
+          status: c.status,
+          remark: c.remark,
+          contact_person: c.contact_person,
+          contact_designation: c.contact_designation,
+          contact_email: c.contact_email,
+          contact_mobile: c.contact_mobile,
+          address: c.address,
+          city_id: c.city_id,
+          state_id: c.state_id,
+          country_id: c.country_id,
+          pincode: c.pincode,
+          website: c.website,
+          verified_by: c.verified_by,
+          verified_at: c.verified_at
+        }
+      });
+    }
+    createdCompanies.push(comp);
+  }
+  console.log('✓ 5 Companies verified/seeded');
+
+  // 7. Seed 5 Candidates
+  const candQualifications = await prisma.qualifications.findFirst();
+  const candSource = await prisma.candidate_sources.findFirst();
+  const uploaderId = createdStaff[0]?.id || adminUser.id;
+
+  const candidateList = [
+    {
+      name: 'Amit R. Kumar',
+      email: 'amit.kumar@example.com',
+      mobile: '+91-9123456780',
+      total_experience: 5.5,
+      current_location: 'Mumbai',
+      preferred_location: 'Mumbai, Pune, Remote',
+      current_company: 'Infosys Ltd',
+      current_designation: 'Senior Software Engineer',
+      current_ctc: 1400000,
+      expected_ctc: 1900000,
+      notice_period_days: 30,
+      summary: 'Experienced Fullstack Engineer with 5+ years building distributed React and Node.js microservices.',
+      resume_path: '/uploads/resumes/amit_kumar_resume.pdf',
+      resume_original_name: 'Amit_Kumar_Resume.pdf'
+    },
+    {
+      name: 'Deepika Sen',
+      email: 'deepika.sen@example.com',
+      mobile: '+91-9123456781',
+      total_experience: 7.0,
+      current_location: 'Bengaluru',
+      preferred_location: 'Bengaluru, Hyderabad',
+      current_company: 'Wipro Technologies',
+      current_designation: 'Lead DevOps Specialist',
+      current_ctc: 2000000,
+      expected_ctc: 2600000,
+      notice_period_days: 15,
+      summary: 'AWS & Kubernetes certified DevOps Architect with extensive Terraform and CI/CD automation background.',
+      resume_path: '/uploads/resumes/deepika_sen_resume.pdf',
+      resume_original_name: 'Deepika_Sen_DevOps.pdf'
+    },
+    {
+      name: 'Rohan S. Joshi',
+      email: 'rohan.joshi@example.com',
+      mobile: '+91-9123456782',
+      total_experience: 4.0,
+      current_location: 'Pune',
+      preferred_location: 'Pune, Mumbai, Remote',
+      current_company: 'Persistent Systems',
+      current_designation: 'Backend Python Engineer',
+      current_ctc: 1100000,
+      expected_ctc: 1500000,
+      notice_period_days: 0,
+      summary: 'Immediate joiner specialized in Python, Django, FastAPI, PostgreSQL, and high-throughput background queues.',
+      resume_path: '/uploads/resumes/rohan_joshi_resume.pdf',
+      resume_original_name: 'Rohan_Joshi_Resume.pdf'
+    },
+    {
+      name: 'Kavita Nair',
+      email: 'kavita.nair@example.com',
+      mobile: '+91-9123456783',
+      total_experience: 3.5,
+      current_location: 'Chennai',
+      preferred_location: 'Chennai, Bengaluru',
+      current_company: 'Zoho Corporation',
+      current_designation: 'UI/UX Developer',
+      current_ctc: 950000,
+      expected_ctc: 1350000,
+      notice_period_days: 30,
+      summary: 'Frontend developer with sharp eye for UI polish, WCAG accessibility, Bootstrap 5, and Next.js applications.',
+      resume_path: '/uploads/resumes/kavita_nair_resume.pdf',
+      resume_original_name: 'Kavita_Nair_Portfolio.pdf'
+    },
+    {
+      name: 'Siddharth Mehta',
+      email: 'siddharth.mehta@example.com',
+      mobile: '+91-9123456784',
+      total_experience: 6.0,
+      current_location: 'Hyderabad',
+      preferred_location: 'Hyderabad, Bengaluru, Remote',
+      current_company: 'Cognizant',
+      current_designation: 'Java Spring Boot Architect',
+      current_ctc: 1700000,
+      expected_ctc: 2300000,
+      notice_period_days: 45,
+      summary: 'Java enterprise architect with deep MySQL tuning, caching, and scalable RESTful API design experience.',
+      resume_path: '/uploads/resumes/siddharth_mehta_resume.pdf',
+      resume_original_name: 'Siddharth_Mehta_Resume.pdf'
+    }
+  ];
+
+  const createdCandidates = [];
+  for (const c of candidateList) {
+    let cand = await prisma.candidates.findFirst({ where: { email: c.email } });
+    if (!cand) {
+      cand = await prisma.candidates.create({
+        data: {
+          name: c.name,
+          email: c.email,
+          mobile: c.mobile,
+          total_experience: c.total_experience,
+          current_location: c.current_location,
+          preferred_location: c.preferred_location,
+          current_company: c.current_company,
+          current_designation: c.current_designation,
+          current_ctc: c.current_ctc,
+          expected_ctc: c.expected_ctc,
+          notice_period_days: c.notice_period_days,
+          summary: c.summary,
+          resume_path: c.resume_path,
+          resume_original_name: c.resume_original_name,
+          qualification_id: candQualifications?.id,
+          source_id: candSource?.id,
+          uploaded_by: uploaderId
+        }
+      });
+    }
+    createdCandidates.push(cand);
+  }
+  console.log('✓ 5 Candidates verified/seeded');
+
+  // 8. Seed 5 Jobs
+  const approvedCompanyA = createdCompanies[0]; // Acme Cloud
+  const approvedCompanyB = createdCompanies[1]; // Starlight Health
+
+  const jobList = [
+    {
+      job_code: 'JOB-2026-0001',
+      title: 'Senior Fullstack React & Node.js Engineer',
+      company_id: approvedCompanyA.id,
+      positions_required: 3,
+      department: 'Engineering',
+      description: '<p>Seeking a Senior Fullstack Engineer to drive core platform development with Next.js and Node.js.</p>',
+      responsibilities: '<p>Design scalable APIs, optimize front-end performance, lead sprint code reviews.</p>',
+      exp_min: 4.0,
+      exp_max: 8.0,
+      salary_min: 1800000,
+      salary_max: 2400000,
+      work_mode: 'hybrid',
+      priority: 'high',
+      status: 'in_progress',
+      assigned_staff_id: createdStaff[0]?.id,
+      created_by: approvedCompanyA.user_id,
+      last_date: new Date(Date.now() + 15 * 86400000)
+    },
+    {
+      job_code: 'JOB-2026-0002',
+      title: 'Lead DevOps & Cloud Infrastructure Architect',
+      company_id: approvedCompanyA.id,
+      positions_required: 2,
+      department: 'Infrastructure',
+      description: '<p>Lead our cloud modernization journey on AWS and Kubernetes with zero-downtime CI/CD.</p>',
+      responsibilities: '<p>Architect cloud clusters, manage infrastructure-as-code, audit security posture.</p>',
+      exp_min: 5.0,
+      exp_max: 10.0,
+      salary_min: 2200000,
+      salary_max: 3000000,
+      work_mode: 'remote',
+      priority: 'urgent',
+      status: 'open',
+      assigned_staff_id: createdStaff[1]?.id,
+      created_by: approvedCompanyA.user_id,
+      last_date: new Date(Date.now() + 10 * 86400000)
+    },
+    {
+      job_code: 'JOB-2026-0003',
+      title: 'Healthcare BI & Clinical Data Analyst',
+      company_id: approvedCompanyB.id,
+      positions_required: 2,
+      department: 'Data Operations',
+      description: '<p>Analyze clinical workflows and operational metrics across hospital networks.</p>',
+      responsibilities: '<p>Build Tableau/PowerBI dashboards, query clinical SQL datastores, maintain HIPAA compliance.</p>',
+      exp_min: 3.0,
+      exp_max: 6.0,
+      salary_min: 1200000,
+      salary_max: 1600000,
+      work_mode: 'onsite',
+      priority: 'medium',
+      status: 'in_progress',
+      assigned_staff_id: createdStaff[2]?.id,
+      created_by: approvedCompanyB.user_id,
+      last_date: new Date(Date.now() + 20 * 86400000)
+    },
+    {
+      job_code: 'JOB-2026-0004',
+      title: 'Frontend UI/UX React Developer',
+      company_id: approvedCompanyB.id,
+      positions_required: 4,
+      department: 'Product Development',
+      description: '<p>Build responsive, accessible portal dashboards and patient engagement interfaces.</p>',
+      responsibilities: '<p>Implement pixel-perfect designs, ensure WCAG compliance, unit-test UI components.</p>',
+      exp_min: 2.0,
+      exp_max: 5.0,
+      salary_min: 1000000,
+      salary_max: 1500000,
+      work_mode: 'hybrid',
+      priority: 'medium',
+      status: 'open',
+      assigned_staff_id: createdStaff[3]?.id,
+      created_by: approvedCompanyB.user_id,
+      last_date: new Date(Date.now() + 25 * 86400000)
+    },
+    {
+      job_code: 'JOB-2026-0005',
+      title: 'Senior Python & API Integration Engineer',
+      company_id: approvedCompanyA.id,
+      positions_required: 2,
+      department: 'Core Platform',
+      description: '<p>Design high-throughput background processing workers and enterprise partner integrations.</p>',
+      responsibilities: '<p>Maintain async worker pipelines, optimize DB query plans, write robust unit tests.</p>',
+      exp_min: 4.0,
+      exp_max: 7.0,
+      salary_min: 1600000,
+      salary_max: 2200000,
+      work_mode: 'remote',
+      priority: 'low',
+      status: 'fulfilled',
+      fulfilled_at: new Date(),
+      assigned_staff_id: createdStaff[4]?.id,
+      created_by: approvedCompanyA.user_id,
+      last_date: new Date(Date.now() - 2 * 86400000)
+    }
+  ];
+
+  const createdJobs = [];
+  for (const j of jobList) {
+    let job = await prisma.jobs.findFirst({ where: { job_code: j.job_code } });
+    if (!job) {
+      job = await prisma.jobs.create({
+        data: {
+          job_code: j.job_code,
+          custom_title: j.title,
+          company_id: j.company_id,
+          positions_required: j.positions_required,
+          department: j.department,
+          description: j.description,
+          responsibilities: j.responsibilities,
+          exp_min: j.exp_min,
+          exp_max: j.exp_max,
+          salary_min: j.salary_min,
+          salary_max: j.salary_max,
+          work_mode: j.work_mode,
+          priority: j.priority,
+          status: j.status,
+          assigned_staff_id: j.assigned_staff_id,
+          created_by: j.created_by,
+          last_date: j.last_date,
+          fulfilled_at: j.fulfilled_at
+        }
+      });
+    }
+    createdJobs.push(job);
+  }
+  console.log('✓ 5 Jobs verified/seeded');
+
+  // 9. Seed 5 Mappings across Jobs and Candidates
+  const mappingList = [
+    {
+      job_id: createdJobs[0].id,
+      candidate_id: createdCandidates[0].id,
+      submitted_by: createdStaff[0].id,
+      match_score: 94,
+      status: 'confirmed',
+      joining_date: new Date(Date.now() + 14 * 86400000),
+      company_remark: 'Outstanding technical interview. Confirmed with immediate offer.'
+    },
+    {
+      job_id: createdJobs[1].id,
+      candidate_id: createdCandidates[1].id,
+      submitted_by: createdStaff[1].id,
+      match_score: 89,
+      status: 'shortlisted',
+      company_remark: 'Shortlisted for final technical panel round.'
+    },
+    {
+      job_id: createdJobs[4].id,
+      candidate_id: createdCandidates[2].id,
+      submitted_by: createdStaff[4].id,
+      match_score: 91,
+      status: 'confirmed',
+      joining_date: new Date(Date.now() + 7 * 86400000),
+      company_remark: 'Fast-tracked offer accepted. Position fulfilled.'
+    },
+    {
+      job_id: createdJobs[3].id,
+      candidate_id: createdCandidates[3].id,
+      submitted_by: createdStaff[3].id,
+      match_score: 82,
+      status: 'viewed',
+      company_remark: 'Portfolio reviewed; pending hiring manager screen.'
+    },
+    {
+      job_id: createdJobs[0].id,
+      candidate_id: createdCandidates[4].id,
+      submitted_by: createdStaff[0].id,
+      match_score: 85,
+      status: 'submitted',
+      submission_note: 'Strong architectural experience with microservices.'
+    }
+  ];
+
+  for (const m of mappingList) {
+    const existingMap = await prisma.job_candidates.findFirst({
+      where: { job_id: m.job_id, candidate_id: m.candidate_id }
+    });
+    if (!existingMap) {
+      await prisma.job_candidates.create({
+        data: {
+          job_id: m.job_id,
+          candidate_id: m.candidate_id,
+          submitted_by: m.submitted_by,
+          match_score: m.match_score,
+          status: m.status,
+          joining_date: m.joining_date,
+          company_remark: m.company_remark,
+          submission_note: m.submission_note,
+          acted_at: new Date()
+        }
+      });
+    }
+  }
+  console.log('✓ 5 Job mappings verified/seeded');
+
+  // 10. Seed 5 Audit Logs
+  const auditLogsList = [
+    {
+      user_id: adminUser.id,
+      action: 'login',
+      module: 'auth',
+      ip: '127.0.0.1',
+      user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X)',
+      new_value: { note: 'Administrator logged into portal' }
+    },
+    {
+      user_id: adminUser.id,
+      action: 'status_change',
+      module: 'companies',
+      record_id: createdCompanies[0].id,
+      ip: '127.0.0.1',
+      user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X)',
+      old_value: { status: 'pending' },
+      new_value: { status: 'approved', remark: 'Documents and GST verified' }
+    },
+    {
+      user_id: createdCompanies[0].user_id,
+      action: 'create',
+      module: 'jobs',
+      record_id: createdJobs[0].id,
+      ip: '127.0.0.1',
+      user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X)',
+      new_value: { job_code: 'JOB-2026-0001', title: 'Senior Fullstack React & Node.js Engineer' }
+    },
+    {
+      user_id: createdStaff[0].id,
+      action: 'create',
+      module: 'mappings',
+      record_id: createdCandidates[0].id,
+      ip: '127.0.0.1',
+      user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X)',
+      new_value: { candidate: 'Amit R. Kumar', job: 'JOB-2026-0001', match_score: 94 }
+    },
+    {
+      user_id: adminUser.id,
+      action: 'update',
+      module: 'settings',
+      ip: '127.0.0.1',
+      user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X)',
+      old_value: { auto_approve_company: 'false' },
+      new_value: { auto_approve_company: 'false', max_failed_logins: 5 }
+    }
+  ];
+
+  for (const a of auditLogsList) {
+    await prisma.audit_logs.create({
+      data: {
+        user_id: a.user_id,
+        action: a.action,
+        module: a.module,
+        record_id: a.record_id,
+        ip: a.ip,
+        user_agent: a.user_agent,
+        old_value: a.old_value,
+        new_value: a.new_value
+      }
+    });
+  }
+  console.log('✓ 5 Audit logs seeded');
+
+  // 11. Seed 1 Soft-deleted Candidate for Trash testing
+  let trashCand = await prisma.candidates.findFirst({ where: { email: 'archived.cand@example.com' } });
+  if (!trashCand) {
+    await prisma.candidates.create({
+      data: {
+        name: 'Vikramaditya Rao',
+        email: 'archived.cand@example.com',
+        mobile: '+91-9988776655',
+        total_experience: 8.0,
+        current_location: 'Mumbai',
+        resume_path: '/uploads/resumes/archived_sample.pdf',
+        uploaded_by: adminUser.id,
+        deleted_at: new Date()
+      }
+    });
+  }
+  console.log('✓ Trash sample record verified/seeded');
+
   console.log('--- Database Seeding Complete ---');
 }
 

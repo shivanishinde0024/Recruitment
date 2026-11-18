@@ -70,6 +70,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display: flex;
   flex-direction: column;
   transition: width 0.2s ease;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.rp-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.rp-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 .rp-sidebar-header {
@@ -112,7 +123,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-weight: 600;
 }
 
-/* Top Navbar */
+/* Top Navbar (Fixed / Sticky at Top) */
 .rp-navbar {
   height: 64px;
   background-color: var(--rp-surface-card);
@@ -121,6 +132,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   align-items: center;
   justify-content: space-between;
   padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
 }
 
 /* Card Styling */
@@ -252,6 +267,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .rp-desktop-sidebar-wrapper {
   flex-shrink: 0;
   width: 260px;
+}
+
+@media (min-width: 768px) {
+  .rp-desktop-sidebar-wrapper .rp-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1020;
+  }
 }
 
 .rp-main-wrapper {
