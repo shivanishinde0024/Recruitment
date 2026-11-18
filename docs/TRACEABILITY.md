@@ -35,12 +35,12 @@ Status values: `Planned` | `In Progress` | `Verified` | `Not met` (with reason).
 | **REQ-JOB-05** | Staff assignment to job by Admin (`PATCH /jobs/:id/assign-staff`) with staff notification | Guide §10.3, §11.9; PDF §4 | Phase 4 | P4-T3 | `jobs.test.js` (F5) | Verified |
 | **REQ-JOB-06** | Manual job status transitions (`open`, `on_hold`, `closed`) and position reduction guard | Guide §10.3, §11.8 | Phase 4 | P4-T3 | `jobs.test.js` | Verified |
 | **REQ-JOB-07** | Job detail computed metrics (positions, submitted, confirmed, pending, remaining) | Guide §10.3.1; PDF §4 | Phase 4 | P4-T4 | `jobs.test.js` | Verified |
-| **REQ-CND-01** | Candidate profile management (CRUD) with single resume file upload | Guide §10.4; PDF §4 | Phase 5 | P5-T1 | `candidate.crud.spec.ts` (F5) | Planned |
-| **REQ-CND-02** | Candidate duplicate detection by email OR mobile returning HTTP 409 conflict | Guide §10.4, §11.11 | Phase 5 | P5-T1 | `candidate.dup.spec.ts` (F5) | Planned |
-| **REQ-CND-03** | FULLTEXT candidate search with graceful parameterized LIKE fallback for short tokens | Master §9.6; Guide §7, §10.4 | Phase 5 | P5-T2 | `candidate.search.spec.ts` | Planned |
-| **REQ-CND-04** | Authenticated private resume file streaming endpoint (`GET /candidates/:id/resume`) | Guide §8.6, §10.4, §11.16 | Phase 5 | P5-T3 | `candidate.resume.spec.ts` | Planned |
-| **REQ-CND-05** | Bulk candidate upload via Excel spreadsheet + Zip archive of resumes with detailed row-by-row error report | Guide §10.4.1; Master §6 | Phase 5 | P5-T4 | `candidate.bulk.spec.ts` (F5) | Planned |
-| **REQ-CND-06** | Staff edit boundary: Staff can only edit candidates they personally uploaded | Master §9.8; Guide §11.19 | Phase 5 | P5-T5 | `candidate.ownership.spec.ts` | Planned |
+| **REQ-CND-01** | Candidate profile management (CRUD) with single resume file upload | Guide §10.4; PDF §4 | Phase 5 | P5-T1 | `candidates.test.js` (F5) | Verified |
+| **REQ-CND-02** | Candidate duplicate detection by email OR mobile returning HTTP 409 conflict | Guide §10.4, §11.11 | Phase 5 | P5-T1 | `candidates.test.js` (F5) | Verified |
+| **REQ-CND-03** | FULLTEXT candidate search with graceful parameterized LIKE fallback for short tokens | Master §9.6; Guide §7, §10.4 | Phase 5 | P5-T2 | `candidates.test.js` | Verified |
+| **REQ-CND-04** | Authenticated private resume file streaming endpoint (`GET /candidates/:id/resume`) | Guide §8.6, §10.4, §11.16 | Phase 5 | P5-T3 | `candidates.test.js` | Verified |
+| **REQ-CND-05** | Bulk candidate upload via Excel spreadsheet + Zip archive of resumes with detailed row-by-row error report | Guide §10.4.1; Master §6 | Phase 5 | P5-T4 | `candidates.test.js` (F5) | Verified |
+| **REQ-CND-06** | Staff edit boundary: Staff can only edit candidates they personally uploaded | Master §9.8; Guide §11.19 | Phase 5 | P5-T5 | `candidates.test.js` | Verified |
 | **REQ-MAP-01** | Candidate matching score algorithm (skills 50, experience 25, location 15, qualification 10) | Guide §9.8; PDF §4 | Phase 6 | P6-T1 | `matching.service.spec.ts` (F6) | Planned |
 | **REQ-MAP-02** | Suggested candidates endpoint (`GET /jobs/:id/suggested-candidates`) with top 50 match scores | Guide §9.8, §10.3 | Phase 6 | P6-T1 | `jobs.suggested.spec.ts` (F6) | Planned |
 | **REQ-MAP-03** | Candidate to job mapping (single & multi) with duplicate skip and notification dispatch | Guide §10.5; PDF §3 | Phase 6 | P6-T2 | `mapping.create.spec.ts` (F6) | Planned |

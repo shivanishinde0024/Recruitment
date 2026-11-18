@@ -148,10 +148,29 @@ class InMemoryTable {
       });
     }
 
-    if (include.skills) {
+    if (include.skills && this.name === 'jobs') {
       enriched.skills = await this.client.job_skills.findMany({
         where: { job_id: record.id },
         include: include.skills.include
+      });
+    }
+
+    if (include.skills && this.name === 'candidates') {
+      enriched.skills = await this.client.candidate_skills.findMany({
+        where: { candidate_id: record.id },
+        include: include.skills.include
+      });
+    }
+
+    if (include.uploader && record.uploaded_by) {
+      enriched.uploader = await this.client.users.findUnique({
+        where: { id: record.uploaded_by }
+      });
+    }
+
+    if (include.source && record.source_id) {
+      enriched.source = await this.client.candidate_sources.findUnique({
+        where: { id: record.source_id }
       });
     }
 
