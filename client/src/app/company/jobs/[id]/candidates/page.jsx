@@ -274,15 +274,25 @@ export default function CompanyJobCandidatesReviewPage() {
                       </div>
 
                       {/* Skills */}
-                      {cand.skills && (
-                        <div className="mb-3 d-flex flex-wrap gap-1">
-                          {cand.skills.split(',').slice(0, 4).map((skill, idx) => (
-                            <span key={idx} className="badge bg-light text-secondary border">
-                              {skill.trim()}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      {(() => {
+                        const rawSkills = cand.skills || cand.candidate_skills;
+                        if (!rawSkills) return null;
+                        const list = Array.isArray(rawSkills)
+                          ? rawSkills.map((s) => (typeof s === 'string' ? s : s?.name || s?.skill?.name || String(s))).filter(Boolean)
+                          : typeof rawSkills === 'string'
+                          ? rawSkills.split(',').map((s) => s.trim()).filter(Boolean)
+                          : [];
+                        if (list.length === 0) return null;
+                        return (
+                          <div className="mb-3 d-flex flex-wrap gap-1">
+                            {list.slice(0, 4).map((skill, idx) => (
+                              <span key={idx} className="badge bg-light text-secondary border">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      })()}
 
                       {/* Action buttons */}
                       <div className="mt-auto pt-2 border-top d-flex gap-2 justify-content-end flex-wrap">

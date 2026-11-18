@@ -333,15 +333,25 @@ export default function AdminJobCandidatesMappingPage() {
                             <span>Qual: {breakdown?.qualification || 0}%</span>
                           </div>
 
-                          {candidate.skills && (
-                            <div className="mt-auto pt-2 d-flex flex-wrap gap-1">
-                              {candidate.skills.split(',').slice(0, 4).map((skill, idx) => (
-                                <span key={idx} className="badge bg-light text-secondary border">
-                                  {skill.trim()}
-                                </span>
-                              ))}
-                            </div>
-                          )}
+                          {(() => {
+                            const rawSkills = candidate.skills || candidate.candidate_skills;
+                            if (!rawSkills) return null;
+                            const list = Array.isArray(rawSkills)
+                              ? rawSkills.map((s) => (typeof s === 'string' ? s : s?.name || s?.skill?.name || String(s))).filter(Boolean)
+                              : typeof rawSkills === 'string'
+                              ? rawSkills.split(',').map((s) => s.trim()).filter(Boolean)
+                              : [];
+                            if (list.length === 0) return null;
+                            return (
+                              <div className="mt-auto pt-2 d-flex flex-wrap gap-1">
+                                {list.slice(0, 4).map((skill, idx) => (
+                                  <span key={idx} className="badge bg-light text-secondary border">
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     );
