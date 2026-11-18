@@ -41,9 +41,12 @@ export default function CompanyProfilePage() {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        // User me includes companyId
-        const companyId = user?.companyId;
-        if (!companyId) return;
+        // User me includes companyId or company.id
+        const companyId = user?.companyId || user?.company?.id;
+        if (!companyId) {
+          setLoading(false);
+          return;
+        }
         const res = await api.get(`/companies/${companyId}`);
         if (res.data?.success) {
           const comp = res.data.data;
