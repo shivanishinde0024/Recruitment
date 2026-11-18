@@ -137,3 +137,4 @@ The automated candidate recommendation engine (`server/src/modules/mappings/matc
 2. **Contact Privacy Guard**: Candidate contact details (`email`, `mobile`, `address`) are automatically masked with asterisks when returned to employer users unless the candidate mapping status is `confirmed`.
 3. **Anti-Formula Injection**: All CSV and Excel export generators sanitize cell contents beginning with `=`, `+`, `-`, `@`, `\t`, or `\r` by prefixing a single quote `'`.
 4. **Zip Slip Traversal Defense**: Zip archives uploaded for bulk candidates validate target extraction paths against canonical base directories, rejecting malicious path traversal tokens (`../`).
+

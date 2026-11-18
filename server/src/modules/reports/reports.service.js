@@ -453,6 +453,20 @@ async function exportReport({ type = 'company-wise', format = 'csv' }) {
       status: m.status,
       mapped_at: m.created_at ? new Date(m.created_at).toISOString().split('T')[0] : ''
     }));
+  } else if (type === 'staff-performance') {
+    const data = await getStaffPerformance();
+    columns = [
+      { key: 'name', label: 'Staff Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'mobile', label: 'Mobile' },
+      { key: 'status', label: 'Status' },
+      { key: 'assigned_jobs_count', label: 'Assigned Jobs' },
+      { key: 'candidates_uploaded_count', label: 'Candidates Uploaded' },
+      { key: 'candidates_submitted_count', label: 'Candidates Submitted' },
+      { key: 'candidates_confirmed_count', label: 'Confirmed Hires' },
+      { key: 'conversion_rate', label: 'Conversion Rate (%)' }
+    ];
+    rows = data;
   } else if (type === 'job-requisitions') {
     const jobs = await prisma.jobs.findMany({
       where: { deleted_at: null },
@@ -521,10 +535,56 @@ async function exportReport({ type = 'company-wise', format = 'csv' }) {
   }
 }
 
+/**
+ * Staff Performance Summary Report (PDF §6, §7)
+ */
+async function getStaffPerformance() {
+  const staffUsers = await prisma.users.findMany({
+    where: { role: 'staff', deleted_at: null }
+  });
+
+  const staffPerformance = [];
+
+  for (const s of staffUsers) {
+    const assignedJobs = await prisma.jobs.count({
+      where: { assigned_staff_id: s.id, deleted_at: null }
+    });
+
+    const candidatesUploaded = await prisma.candidates.count({
+      where: { uploaded_by: s.id, deleted_at: null }
+    });
+
+    const mappings = await prisma.job_candidates.findMany({
+      where: { created_by: s.id, deleted_at: null }
+    });
+
+    const confirmedCount = mappings.filter(m => m.status === 'confirmed').length;
+    const submittedCount = mappings.length;
+    const conversionRate = submittedCount > 0 ? Number(((confirmedCount / submittedCount) * 100).toFixed(1)) : 0;
+
+    staffPerformance.push({
+      id: String(s.id),
+      name: s.name,
+      email: s.email,
+      mobile: s.mobile || '',
+      status: s.status,
+      assigned_jobs_count: assignedJobs,
+      candidates_uploaded_count: candidatesUploaded,
+      candidates_submitted_count: submittedCount,
+      candidates_confirmed_count: confirmedCount,
+      conversion_rate: conversionRate
+    });
+  }
+
+  return staffPerformance;
+}
+
 module.exports = {
   getAdminCompanyWise,
   getCompanyDrillDown,
   getStaffDashboard,
   getCompanyDashboard,
+  getStaffPerformance,
   exportReport
 };
+

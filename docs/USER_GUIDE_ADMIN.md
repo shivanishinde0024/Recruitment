@@ -93,3 +93,4 @@ When an employer registers, they enter a `pending` state until verified by an Ad
 2. Configure platform name, support contact, and branding tokens.
 3. Configure outbound SMTP host, port, authentication, and sender address.
 4. Click **Send Test Email** to send a live probe message to verify connectivity.
+

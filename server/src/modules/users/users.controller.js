@@ -35,3 +35,4 @@ exports.remove = async (req, res) => {
   const result = await usersService.deleteUser(req.params.id, req.user.id, req);
   return ok(res, null, result.message);
 };
+

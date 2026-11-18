@@ -155,3 +155,4 @@ Configure `/etc/logrotate.d/recruitment-portal`:
     copytruncate
 }
 ```
+

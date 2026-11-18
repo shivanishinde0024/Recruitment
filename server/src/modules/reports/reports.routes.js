@@ -28,6 +28,13 @@ router.get(
   reportsController.getCompanyDashboardHandler
 );
 
+// Staff Performance Report (Admin & Staff)
+router.get(
+  '/staff-performance',
+  requireRole('admin', 'staff'),
+  reportsController.getStaffPerformanceHandler
+);
+
 // Export Report (CSV / XLSX with anti-formula injection)
 router.get(
   '/export',

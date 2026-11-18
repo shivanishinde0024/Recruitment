@@ -18,3 +18,4 @@ router.patch('/:id/status', validate(userStatusSchema), asyncHandler(usersContro
 router.delete('/:id', asyncHandler(usersController.remove));
 
 module.exports = router;
+

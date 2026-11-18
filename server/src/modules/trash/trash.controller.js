@@ -45,3 +45,4 @@ module.exports = {
   restoreItemHandler,
   permanentlyDeleteItemHandler
 };
+

@@ -12,3 +12,4 @@ router.put('/', settingsController.updateSettingsHandler);
 router.post('/test-email', settingsController.sendTestEmailHandler);
 
 module.exports = router;
+

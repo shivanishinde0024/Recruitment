@@ -65,3 +65,4 @@ Performance benchmarking was executed with 50 sequential and concurrent iteratio
 | `GET /api/docs/openapi.json` | 0.52 ms | 0.79 ms | 0.77 ms | **1.06 ms** | 1.23 ms | < 150 ms | **PASS** |
 
 **Conclusion**: All response times remain under 2ms, comfortably beating the 150ms p95 SLA threshold by over 98%.
+

@@ -206,6 +206,15 @@
         }
       }
     },
+    "/candidates/template": {
+      "get": {
+        "summary": "Download standard candidate bulk upload Excel spreadsheet template",
+        "tags": ["Candidates"],
+        "responses": {
+          "200": { "description": "XLSX file stream" }
+        }
+      }
+    },
     "/candidates/bulk-upload": {
       "post": {
         "summary": "Bulk upload candidates via Excel spreadsheet + Zip archive",
@@ -233,6 +242,66 @@
         ],
         "responses": {
           "200": { "description": "Review status updated" }
+        }
+      }
+    },
+    "/job-candidates/{id}/status": {
+      "patch": {
+        "summary": "Company review candidate action alias (PDF §7)",
+        "tags": ["Mappings"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Status updated" }
+        }
+      }
+    },
+    "/job-candidates/{id}": {
+      "delete": {
+        "summary": "Withdraw candidate mapping alias (PDF §7)",
+        "tags": ["Mappings"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Mapping withdrawn" }
+        }
+      }
+    },
+    "/dashboard/admin": {
+      "get": {
+        "summary": "Admin company-wise recruitment pipeline dashboard (PDF §7, Guide §10.8)",
+        "tags": ["Dashboard"],
+        "responses": {
+          "200": { "description": "Admin dashboard analytics" }
+        }
+      }
+    },
+    "/dashboard/staff": {
+      "get": {
+        "summary": "Staff recruiter workspace dashboard (PDF §7, Guide §10.8)",
+        "tags": ["Dashboard"],
+        "responses": {
+          "200": { "description": "Staff dashboard analytics" }
+        }
+      }
+    },
+    "/dashboard/company": {
+      "get": {
+        "summary": "Employer hiring dashboard (PDF §7, Guide §10.8)",
+        "tags": ["Dashboard"],
+        "responses": {
+          "200": { "description": "Company dashboard analytics" }
+        }
+      }
+    },
+    "/reports/staff-performance": {
+      "get": {
+        "summary": "Staff recruitment performance metrics across all recruiters (PDF §7)",
+        "tags": ["Reports"],
+        "responses": {
+          "200": { "description": "Staff performance list" }
         }
       }
     },
@@ -286,3 +355,4 @@
     }
   }
 }
+

@@ -20,3 +20,4 @@ exports.markAllRead = async (req, res) => {
   const result = await notificationsService.markAllAsRead(req.user.id);
   return ok(res, result, 'All marked as read');
 };
+

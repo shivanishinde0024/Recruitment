@@ -13,3 +13,4 @@ router.patch('/:id/read', asyncHandler(notificationsController.markRead));
 router.patch('/read-all', asyncHandler(notificationsController.markAllRead));
 
 module.exports = router;
+

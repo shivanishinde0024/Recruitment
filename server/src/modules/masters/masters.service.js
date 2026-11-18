@@ -194,3 +194,4 @@ module.exports = {
   toggleMaster,
   deleteMaster
 };
+

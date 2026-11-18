@@ -57,6 +57,15 @@ async function getCompanyDashboardHandler(req, res, next) {
   }
 }
 
+async function getStaffPerformanceHandler(req, res, next) {
+  try {
+    const data = await reportsService.getStaffPerformance();
+    return ok(res, data, 'Staff performance metrics retrieved successfully');
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function exportReportHandler(req, res, next) {
   try {
     const { type = 'company-wise', format = 'csv' } = req.query;
@@ -88,6 +97,7 @@ module.exports = {
   getCompanyDrillDownHandler,
   getStaffDashboardHandler,
   getCompanyDashboardHandler,
+  getStaffPerformanceHandler,
   exportReportHandler,
   triggerDeadlineCheckHandler
 };

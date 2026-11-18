@@ -38,7 +38,13 @@ export default function Navbar({ onToggleSidebar }) {
 
         <div className="d-flex align-items-center gap-2">
           <div className="text-end d-none d-sm-block">
-            <div className="fw-semibold small">{user?.name || 'User'}</div>
+            <a
+              href={`/${user?.role || 'admin'}/profile`}
+              className="fw-semibold small text-decoration-none text-dark hover-primary"
+              title="Account Settings & Profile"
+            >
+              {user?.name || 'User'}
+            </a>
             <div className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>
               {user?.role || 'Guest'}
             </div>

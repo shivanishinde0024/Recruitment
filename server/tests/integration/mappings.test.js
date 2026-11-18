@@ -385,5 +385,32 @@ describe('Phase 6: Candidate Mapping and Company Review Module', () => {
       expect(res.status).toBe(422);
       expect(res.body.message).toMatch(/Cannot withdraw candidate: status is already 'shortlisted'/i);
     });
+
+    it('supports PDF §7 alias endpoints /job-candidates/:id/status and DELETE /job-candidates/:id', async () => {
+      // Review via alias
+      const resReview = await request(app)
+        .patch(`/api/v1/job-candidates/${mappingA.id}/status`)
+        .set('Authorization', `Bearer ${companyToken}`)
+        .send({ action: 'viewed' });
+
+      expect(resReview.status).toBe(200);
+      expect(resReview.body.data.status).toBe('viewed');
+
+      // Map another candidate to test delete alias
+      const mapRes = await request(app)
+        .post('/api/v1/mappings')
+        .set('Authorization', `Bearer ${staffToken}`)
+        .send({ job_id: testJob.id, candidate_ids: [candidateB.id] });
+      const mappingB = mapRes.body.data.results[0];
+
+      const resWithdraw = await request(app)
+        .delete(`/api/v1/job-candidates/${mappingB.id}`)
+        .set('Authorization', `Bearer ${staffToken}`)
+        .send({ reason: 'Withdrawn by recruiter' });
+
+      expect(resWithdraw.status).toBe(200);
+      expect(resWithdraw.body.data.status).toBe('withdrawn');
+    });
   });
 });
+

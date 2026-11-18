@@ -18,3 +18,4 @@ router.patch('/:type/:id/toggle', authenticate, requireRole('admin'), asyncHandl
 router.delete('/:type/:id', authenticate, requireRole('admin'), asyncHandler(mastersController.remove));
 
 module.exports = router;
+

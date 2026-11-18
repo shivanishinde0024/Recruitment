@@ -50,3 +50,4 @@
 - [ ] Race-safe confirmation blocks over-fulfilling job positions.
 - [ ] Contact details masked for company until candidate is confirmed.
 - [ ] All unit and integration tests passing.
+

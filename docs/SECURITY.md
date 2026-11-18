@@ -39,3 +39,4 @@ The Recruitment Portal adheres to defense-in-depth principles across transport, 
 ## 3. Vulnerability Reporting & Disclosure
 
 To report a suspected security vulnerability, please contact the development team at `security@recruitment-portal.internal`. Please do not disclose vulnerabilities publicly until an authorized patch has been released.
+

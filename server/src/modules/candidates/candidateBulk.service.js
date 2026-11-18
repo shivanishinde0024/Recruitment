@@ -181,3 +181,4 @@ async function processBulkCandidateUpload(excelBuffer, zipBuffer = null, current
 module.exports = {
   processBulkCandidateUpload
 };
+

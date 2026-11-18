@@ -58,3 +58,4 @@ Welcome to the Recruitment Portal Employer Workspace. This guide assists employe
    - Candidate contact information (phone number, email address, address) is immediately unmasked.
    - The requisition's remaining open positions count is decremented.
    - **Auto-Fulfillment**: When the number of confirmed candidates reaches the total required positions, the job requisition automatically transitions to **Fulfilled**.
+

@@ -56,10 +56,10 @@ export default function StaffDashboardPage() {
           </p>
         </div>
         <div className="d-flex gap-2">
-          <Link href="/admin/candidates/create" className="btn btn-primary btn-sm">
+          <Link href="/staff/candidates/create" className="btn btn-primary btn-sm">
             + Register Candidate
           </Link>
-          <Link href="/admin/candidates/bulk" className="btn btn-outline-secondary btn-sm">
+          <Link href="/staff/candidates/bulk-upload" className="btn btn-outline-secondary btn-sm">
             Bulk Upload (Excel/Zip)
           </Link>
         </div>

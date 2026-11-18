@@ -204,3 +204,4 @@ Reads and updates platform policies, branding, and SMTP configuration. (Admin on
 
 ### `POST /settings/test-email`
 Sends live test probe email to verify SMTP configuration. (Admin only)
+

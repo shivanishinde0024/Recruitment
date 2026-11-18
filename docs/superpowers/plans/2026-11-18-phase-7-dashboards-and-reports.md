@@ -28,3 +28,4 @@
    - `client/src/app/admin/reports/page.jsx` (Reports table & CSV/Excel export triggers).
    - `client/src/app/staff/dashboard/page.jsx` (Staff assigned tasks & pipeline).
    - `client/src/app/company/dashboard/page.jsx` (Company overview & active job cards).
+

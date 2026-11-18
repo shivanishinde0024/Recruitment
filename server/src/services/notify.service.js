@@ -34,3 +34,4 @@ async function notify({ userIds = [], type, title, message, refType = null, refI
 module.exports = {
   notify
 };
+

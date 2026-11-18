@@ -30,3 +30,4 @@ exports.remove = async (req, res) => {
   const result = await mastersService.deleteMaster(req.params.type, req.params.id, req);
   return ok(res, null, result.message);
 };
+

@@ -12,3 +12,4 @@ router.patch('/:module/:id/restore', trashController.restoreItemHandler);
 router.delete('/:module/:id/permanent', trashController.permanentlyDeleteItemHandler);
 
 module.exports = router;
+

@@ -44,3 +44,4 @@ router.get('/:id/documents/:docId/download', authenticate, companiesController.d
 router.delete('/:id', authenticate, requireRole('admin'), companiesController.remove);
 
 module.exports = router;
+

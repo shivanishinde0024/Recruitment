@@ -335,5 +335,16 @@ describe('Phase 5: Candidates Module', () => {
       expect(c1).toBeDefined();
       expect(c2).toBeDefined();
     });
+
+    it('GET /api/v1/candidates/template downloads standard bulk Excel spreadsheet template', async () => {
+      const res = await request(app)
+        .get('/api/v1/candidates/template')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.headers['content-type']).toContain('spreadsheetml.sheet');
+      expect(res.headers['content-disposition']).toContain('Candidate_Bulk_Import_Template.xlsx');
+    });
   });
 });
+

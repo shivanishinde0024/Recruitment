@@ -325,4 +325,46 @@ describe('Phase 7: Dashboards, Notifications, and Reports Module', () => {
       expect(res.body.data.notifications_sent).toBeGreaterThanOrEqual(1);
     });
   });
+
+  describe('Dashboard & Staff Performance Aliases (PDF §7, Guide §10.8)', () => {
+    it('GET /api/v1/dashboard/admin returns admin company-wise dashboard', async () => {
+      const res = await request(app)
+        .get('/api/v1/dashboard/admin')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toHaveProperty('summary');
+    });
+
+    it('GET /api/v1/dashboard/staff returns staff workspace metrics', async () => {
+      const res = await request(app)
+        .get('/api/v1/dashboard/staff')
+        .set('Authorization', `Bearer ${staffToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toHaveProperty('metrics');
+    });
+
+    it('GET /api/v1/dashboard/company returns company dashboard', async () => {
+      const res = await request(app)
+        .get('/api/v1/dashboard/company')
+        .set('Authorization', `Bearer ${company1Token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toHaveProperty('metrics');
+    });
+
+    it('GET /api/v1/reports/staff-performance returns staff recruiter metrics', async () => {
+      const res = await request(app)
+        .get('/api/v1/reports/staff-performance')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
+    });
+  });
 });

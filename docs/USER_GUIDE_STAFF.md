@@ -63,3 +63,4 @@ If an error occurs or a candidate becomes unavailable:
 3. Click **Withdraw Candidate**.
 4. Input mandatory withdrawal remark.
 5. **Important Rule**: Once the employer company has reviewed, shortlisted, or scheduled the candidate, withdrawal is blocked (HTTP 422). Staff must contact the employer directly.
+

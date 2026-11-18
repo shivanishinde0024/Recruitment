@@ -28,3 +28,4 @@
    - `client/src/app/admin/audit/page.jsx`
    - `client/src/app/admin/trash/page.jsx`
    - `client/src/app/admin/settings/page.jsx`
+

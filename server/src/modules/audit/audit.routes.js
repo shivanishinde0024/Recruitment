@@ -11,3 +11,4 @@ router.get('/', auditController.listAuditLogsHandler);
 router.get('/:id', auditController.getAuditLogByIdHandler);
 
 module.exports = router;
+

@@ -31,3 +31,4 @@ function sanitizeHtml(dirty) {
 module.exports = {
   sanitizeHtml
 };
+

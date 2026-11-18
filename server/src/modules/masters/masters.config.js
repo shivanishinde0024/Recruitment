@@ -153,3 +153,4 @@ const MASTERS_CONFIG = {
 };
 
 module.exports = MASTERS_CONFIG;
+

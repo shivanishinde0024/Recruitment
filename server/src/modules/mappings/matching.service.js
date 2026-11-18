@@ -95,3 +95,4 @@ function calculateMatchScore(job, candidate) {
 module.exports = {
   calculateMatchScore
 };
+
