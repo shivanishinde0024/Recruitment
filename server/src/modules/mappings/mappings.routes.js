@@ -19,6 +19,19 @@ router.post(
   mappingsController.create
 );
 
+// List candidates mapped to a job via query parameter (e.g. ?job_id=123)
+router.get(
+  '/',
+  authenticate,
+  (req, res, next) => {
+    if (req.query.job_id) {
+      req.params.jobId = req.query.job_id;
+      return mappingsController.list(req, res, next);
+    }
+    return res.status(400).json({ success: false, message: 'job_id query parameter is required' });
+  }
+);
+
 // Get suggested ranked candidates for a job
 router.get(
   '/jobs/:jobId/suggested',

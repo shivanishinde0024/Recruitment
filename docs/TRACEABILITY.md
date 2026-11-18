@@ -60,13 +60,13 @@ Status values: `Planned` | `In Progress` | `Verified` | `Not met` (with reason).
 | **REQ-AUD-02** | Audit log viewer in Admin with JSON before/after diff inspector | Guide §13.2, §16.2 | Phase 8 | P8-T1 | `audit_settings_trash.test.js` | Verified |
 | **REQ-AUD-03** | Trash and restore manager for soft-deleted companies, jobs, and candidates | Master §9.4; Guide §8.5, §13.2 | Phase 8 | P8-T2 | `audit_settings_trash.test.js` (F10) | Verified |
 | **REQ-AUD-04** | System settings management with dynamic SMTP configuration and test email trigger | Guide §7, §16.3; PDF §4 | Phase 8 | P8-T3 | `audit_settings_trash.test.js` | Verified |
-| **REQ-SEC-01** | OWASP A01: Automated exhaustive RBAC matrix test across all endpoints and roles | Master §8.2 | Phase 9 | P9-T1 | `security.rbac.matrix.spec.ts` | Planned |
-| **REQ-SEC-02** | IDOR testing on every parameterized `:id` route ensuring 404 for cross-tenant access | Master §8.2; Guide §11.13 | Phase 9 | P9-T1 | `security.idor.spec.ts` (F11) | Planned |
-| **REQ-SEC-03** | Injection & XSS tests (SQL injection, stored/reflected XSS, header injection, NoSQL queries) | Master §8.3 | Phase 9 | P9-T2 | `security.injection.spec.ts` | Planned |
-| **REQ-SEC-04** | File handling security (Zip slip, Zip bomb, double extension, MIME spoofing, traversal) | Master §8.4 | Phase 9 | P9-T3 | `security.files.spec.ts` | Planned |
-| **REQ-SEC-05** | Business logic abuse audit (concurrent confirms, status jump exploits, negative positions) | Master §8.5 | Phase 9 | P9-T4 | `security.logic.spec.ts` | Planned |
-| **REQ-SEC-06** | Supply chain, secret scanning & client bundle audit (no leaked secrets in `NEXT_PUBLIC_*`) | Master §8.6, §8.7 | Phase 9 | P9-T5 | `security.secrets.spec.ts` | Planned |
-| **REQ-SEC-07** | Privacy & PII redaction in logs and audit tables | Master §8.9 | Phase 9 | P9-T6 | `security.privacy.spec.ts` | Planned |
+| **REQ-SEC-01** | OWASP A01: Automated exhaustive RBAC matrix test across all endpoints and roles | Master §8.2 | Phase 9 | P9-T1 | `security_audit.test.js` | Verified |
+| **REQ-SEC-02** | IDOR testing on every parameterized `:id` route ensuring 404 for cross-tenant access | Master §8.2; Guide §11.13 | Phase 9 | P9-T1 | `security_audit.test.js` (F11) | Verified |
+| **REQ-SEC-03** | Injection & XSS tests (SQL injection, stored/reflected XSS, header injection, NoSQL queries) | Master §8.3 | Phase 9 | P9-T2 | `security_audit.test.js` | Verified |
+| **REQ-SEC-04** | File handling security (Zip slip, Zip bomb, double extension, MIME spoofing, traversal) | Master §8.4 | Phase 9 | P9-T3 | `security_audit.test.js` | Verified |
+| **REQ-SEC-05** | Business logic abuse audit (concurrent confirms, status jump exploits, negative positions) | Master §8.5 | Phase 9 | P9-T4 | `security_audit.test.js` | Verified |
+| **REQ-SEC-06** | Supply chain, secret scanning & client bundle audit (no leaked secrets in `NEXT_PUBLIC_*`) | Master §8.6, §8.7 | Phase 9 | P9-T5 | `security_audit.test.js` | Verified |
+| **REQ-SEC-07** | Privacy & PII redaction in logs and audit tables | Master §8.9 | Phase 9 | P9-T6 | `security_audit.test.js` | Verified |
 | **REQ-REL-01** | Full E2E Playwright verification suite for flows F1 through F14 | Master §10 | Phase 10 | P10-T1 | `e2e.flows.spec.ts` | Planned |
 | **REQ-REL-02** | Accessibility automated WCAG AA audit on key screens | Master §7, §10 | Phase 10 | P10-T2 | `a11y.audit.spec.ts` | Planned |
 | **REQ-REL-03** | Load smoke test (k6 or autocannon) validating p95 query response target | Master §10 | Phase 10 | P10-T3 | `load.smoke.spec.ts` | Planned |
