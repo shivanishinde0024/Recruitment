@@ -53,7 +53,9 @@ export default function CompanyJobsPage() {
       key: 'title',
       render: (row) => (
         <div>
-          <div className="fw-semibold text-primary">{row.title}</div>
+          <div className="fw-semibold text-primary">
+            {row.custom_title || (typeof row.title === 'string' ? row.title : row.title?.name) || row.job_code}
+          </div>
           <div className="text-muted small">
             <code>{row.job_code}</code> • {row.employment_type?.name || 'Full-time'}
           </div>

@@ -1,18 +1,53 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import api from '../../../services/api';
 import StatusBadge from '../../../components/ui/StatusBadge';
 
-export default function CompanyCandidateOverviewPage() {
+const resolveTitle = (j) => {
+  if (!j) return 'Job Requisition';
+  if (typeof j.custom_title === 'string' && j.custom_title.trim()) return j.custom_title;
+  if (typeof j.title === 'string' && j.title.trim()) return j.title;
+  if (j.title && typeof j.title.name === 'string') return j.title.name;
+  return j.job_code || 'Job Requisition';
+};
+
+const resolveCandidateName = (c) => {
+  if (!c) return 'Candidate';
+  if (c.candidate_name) return c.candidate_name;
+  if (c.candidate?.name) return c.candidate.name;
+  const fullName = `${c.candidate?.first_name || ''} ${c.candidate?.last_name || ''}`.trim();
+  return fullName || 'Candidate';
+};
+
+const resolveDesignation = (c) => {
+  const cand = c?.candidate || c;
+  if (typeof cand?.current_designation === 'string' && cand.current_designation.trim()) return cand.current_designation;
+  if (typeof cand?.designation === 'string' && cand.designation.trim()) return cand.designation;
+  if (cand?.designation && typeof cand.designation.name === 'string') return cand.designation.name;
+  return 'Candidate';
+};
+
+function CandidateOverviewContent() {
+  const searchParams = useSearchParams();
+  const initialJobId = searchParams?.get('jobId') || 'all';
+
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filterJob, setFilterJob] = useState('all');
+  const [filterJob, setFilterJob] = useState(initialJobId);
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Sync url param if it changes
+  useEffect(() => {
+    if (searchParams?.get('jobId')) {
+      setFilterJob(searchParams.get('jobId'));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,13 +62,13 @@ export default function CompanyCandidateOverviewPage() {
         const allCandidates = [];
         for (const j of jobsList) {
           try {
-            const mapRes = await api.get(`/mappings/jobs/${j.id}`);
-            if (mapRes.data?.success && mapRes.data.data) {
-              mapRes.data.data.forEach(m => {
+            const mapRes = await api.get(`/mappings?job_id=${j.id}`);
+            if (mapRes.data?.success && Array.isArray(mapRes.data.data)) {
+              mapRes.data.data.forEach((m) => {
                 allCandidates.push({
                   ...m,
                   job_code: j.job_code,
-                  job_title: j.title,
+                  job_title: resolveTitle(j),
                   job_id: j.id
                 });
               });
@@ -58,8 +93,8 @@ export default function CompanyCandidateOverviewPage() {
     if (filterStatus !== 'all' && c.status !== filterStatus) return false;
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      const name = (c.candidate_name || `${c.candidate?.first_name || ''} ${c.candidate?.last_name || ''}`).toLowerCase();
-      const jTitle = (c.job_title || '').toLowerCase();
+      const name = resolveCandidateName(c).toLowerCase();
+      const jTitle = (typeof c.job_title === 'string' ? c.job_title : '').toLowerCase();
       return name.includes(term) || jTitle.includes(term);
     }
     return true;
@@ -67,12 +102,12 @@ export default function CompanyCandidateOverviewPage() {
 
   return (
     <div className="container-fluid py-3">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
           <h1 className="h3 fw-bold mb-1">Candidate Review Center</h1>
-          <p className="text-muted small">Overview of all candidate submissions across your active job requisitions</p>
+          <p className="text-muted small mb-0">Overview of all candidate submissions across your active job requisitions</p>
         </div>
-        <Link href="/company/jobs" className="btn btn-outline-primary">
+        <Link href="/company/jobs" className="btn btn-outline-primary btn-sm">
           View All Requisitions
         </Link>
       </div>
@@ -100,7 +135,7 @@ export default function CompanyCandidateOverviewPage() {
               <option value="all">All Job Requisitions</option>
               {jobs.map((j) => (
                 <option key={j.id} value={j.id}>
-                  {j.job_code} - {j.title}
+                  {j.job_code} - {resolveTitle(j)}
                 </option>
               ))}
             </select>
@@ -151,7 +186,7 @@ export default function CompanyCandidateOverviewPage() {
               </thead>
               <tbody>
                 {filtered.map((c) => {
-                  const candidateName = c.candidate_name || `${c.candidate?.first_name || ''} ${c.candidate?.last_name || ''}` || 'Candidate';
+                  const candidateName = resolveCandidateName(c);
                   const isConfirmed = c.status === 'confirmed';
 
                   return (
@@ -159,7 +194,7 @@ export default function CompanyCandidateOverviewPage() {
                       <td>
                         <div className="fw-semibold">{candidateName}</div>
                         <div className="text-muted small">
-                          {c.candidate?.current_designation || c.candidate?.designation || 'Candidate'}
+                          {resolveDesignation(c)}
                         </div>
                       </td>
                       <td>
@@ -206,3 +241,17 @@ export default function CompanyCandidateOverviewPage() {
   );
 }
 
+export default function CompanyCandidateOverviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-5 text-center text-muted">
+          <div className="spinner-border text-primary spinner-border-sm" role="status" />
+          <div className="small mt-2">Loading review center...</div>
+        </div>
+      }
+    >
+      <CandidateOverviewContent />
+    </Suspense>
+  );
+}

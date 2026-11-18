@@ -141,7 +141,9 @@ export default function CompanyDashboardPage() {
                           <span className="badge bg-secondary font-monospace extra-small me-2">
                             {j.job_code}
                           </span>
-                          <h6 className="fw-bold d-inline text-dark">{j.title}</h6>
+                          <h6 className="fw-bold d-inline text-dark">
+                            {j.custom_title || (typeof j.title === 'string' ? j.title : j.title?.name) || j.job_code}
+                          </h6>
                         </div>
                         <StatusBadge status={j.status} />
                       </div>

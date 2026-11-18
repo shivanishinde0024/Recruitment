@@ -157,8 +157,10 @@ async function listJobs(query = {}, currentUser) {
   const enrichedItems = await Promise.all(
     items.map(async (job) => {
       const counts = await computeJobMetrics(job.id, job.positions_required);
+      const titleStr = job.custom_title || (typeof job.title === 'string' ? job.title : job.title?.name) || 'Untitled Job';
       return {
         ...job,
+        title: titleStr,
         ...counts
       };
     })
@@ -195,9 +197,11 @@ async function getJobById(id, currentUser) {
   }
 
   const counts = await computeJobMetrics(jobId, job.positions_required);
+  const titleStr = job.custom_title || (typeof job.title === 'string' ? job.title : job.title?.name) || 'Untitled Job';
 
   return {
     ...job,
+    title: titleStr,
     ...counts
   };
 }
