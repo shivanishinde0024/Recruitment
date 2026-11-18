@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: recruitment_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: recruitment
+      MYSQL_USER: portal_user
+      MYSQL_PASSWORD: portal_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./server/sql/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: recruitment_api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      CLIENT_URL: http://localhost:3000
+      DATABASE_URL: mysql://portal_user:portal_password@db:3306/recruitment
+      JWT_ACCESS_SECRET: default_dev_access_secret_min_64_characters_long_for_security_testing_purpose
+      JWT_REFRESH_SECRET: default_dev_refresh_secret_min_64_characters_long_for_security_testing_purpose
+      JWT_ACCESS_EXPIRES: 15m
+      JWT_REFRESH_EXPIRES: 7d
+      BCRYPT_ROUNDS: 12
+      MAX_FAILED_LOGINS: 5
+      LOCK_MINUTES: 15
+      UPLOAD_DIR: ./uploads
+      MAX_RESUME_MB: 5
+      MAX_DOC_MB: 5
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+      - api_uploads:/app/uploads
+
+  web:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: recruitment_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      API_URL: http://api:5000
+      NEXT_PUBLIC_APP_NAME: Recruitment Portal
+    depends_on:
+      - api
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  mysql_data:
+  api_uploads:

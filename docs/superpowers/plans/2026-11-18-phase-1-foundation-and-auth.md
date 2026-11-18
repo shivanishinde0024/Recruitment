@@ -92,9 +92,22 @@
 ---
 
 ## 4. Phase 1 Exit Gate Checklist
-- [ ] Admin can authenticate and obtain access + refresh cookies.
-- [ ] Account lockout kicks in at 5 consecutive invalid attempts with HTTP 423.
-- [ ] Refresh token endpoint rotates token and invalidates old token.
-- [ ] Reusing an old refresh token revokes all user sessions.
-- [ ] Logout revokes refresh token and clears cookies.
-- [ ] Role protection middleware prevents unauthorized cross-role access.
+- [x] Admin can authenticate and obtain access + refresh cookies.
+- [x] Account lockout kicks in at 5 consecutive invalid attempts with HTTP 423.
+- [x] Refresh token endpoint rotates token and invalidates old token.
+- [x] Reusing an old refresh token revokes all user sessions.
+- [x] Logout revokes refresh token and clears cookies.
+- [x] Role protection middleware prevents unauthorized cross-role access.
+
+---
+
+## 5. Verification Block
+- **Test Command:** `cd server && npm test`
+- **Results:** 5 test suites passed, 24 tests passed, 0 failed.
+- **Coverage:**
+  - `ApiError.test.js` (2 passed)
+  - `response.test.js` (3 passed)
+  - `pagination.test.js` (4 passed)
+  - `app.test.js` (3 passed)
+  - `auth.test.js` (12 passed)
+- **Seed Verification:** `cd server && NODE_ENV=test node -e 'require("./prisma/seed")'` (Passed cleanly)

@@ -5,18 +5,18 @@ Status values: `Planned` | `In Progress` | `Verified` | `Not met` (with reason).
 
 | Req ID | Description | Source (file + section) | Phase | Task | Test(s) | Status |
 |---|---|---|---|---|---|---|
-| **REQ-FND-01** | Monorepo layout (server + client), tooling, ESLint, Prettier, git hooks, environment configurations | Guide §3, §4; PDF §8 | Phase 1 | P1-T1 | `npm run lint`, `npm test` | Planned |
-| **REQ-FND-02** | MySQL 8 schema with InnoDB, utf8mb4, soft delete (`deleted_at`), and foreign keys | Guide §7; PDF §5 | Phase 1 | P1-T2 | Schema migration & seed test | Planned |
-| **REQ-FND-03** | Prisma ORM setup, models generation, and seed script (admin, masters, settings, templates) | Guide §4.2, §7.1 | Phase 1 | P1-T3 | Seed verification test | Planned |
-| **REQ-FND-04** | Express server core with Helmet, CORS, HPP, RateLimit, Morgan, Winston, and uniform error envelope | Guide §8, §9.1, §9.2 | Phase 1 | P1-T4 | App boot & middleware integration tests | Planned |
-| **REQ-FND-05** | Next.js 14 App Router client with customized Bootstrap 5 tokens, responsive layout & theme tokens | Master §7; Guide §12.4 | Phase 1 | P1-T5 | Client build & render check | Planned |
-| **REQ-AUT-01** | User authentication: login with email and password, bcrypt cost 12, issue access & refresh tokens | Guide §9.4, §10.1; PDF §4 | Phase 1 | P1-T6 | `auth.login.spec.ts` | Planned |
-| **REQ-AUT-02** | Account lockout after 5 consecutive failed attempts for 15 minutes (HTTP 423) | Master §9.15; Guide §9.4 | Phase 1 | P1-T6 | `auth.lockout.spec.ts` (F12) | Planned |
-| **REQ-AUT-03** | Rotating refresh tokens with reuse detection (revokes entire token family upon replay) | Master §9.5; Guide §10.1 | Phase 1 | P1-T7 | `auth.refresh.spec.ts` | Planned |
-| **REQ-AUT-04** | Logout revoking refresh token and clearing httpOnly cookies | Guide §10.1; PDF §4 | Phase 1 | P1-T7 | `auth.logout.spec.ts` | Planned |
-| **REQ-AUT-05** | Password reset flow: forgot password with anti-enumeration (always 200), single-use token valid 30m | Guide §10.1; Master §8 | Phase 1 | P1-T8 | `auth.reset.spec.ts` (F12) | Planned |
-| **REQ-AUT-06** | Change password and update profile (`/auth/me`, `/auth/change-password`) | Guide §10.1; PDF §4 | Phase 1 | P1-T8 | `auth.profile.spec.ts` | Planned |
-| **REQ-AUT-07** | Frontend AuthContext, `useAuth` hook, role-based route guard in Next.js `middleware.js` | Guide §12.1, §12.3 | Phase 1 | P1-T9 | Client auth guard integration test | Planned |
+| **REQ-FND-01** | Monorepo layout (server + client), tooling, ESLint, Prettier, git hooks, environment configurations | Guide §3, §4; PDF §8 | Phase 1 | P1-T1 | `npm run lint`, `npm test` | Verified |
+| **REQ-FND-02** | MySQL 8 schema with InnoDB, utf8mb4, soft delete (`deleted_at`), and foreign keys | Guide §7; PDF §5 | Phase 1 | P1-T2 | Schema migration & seed test | Verified |
+| **REQ-FND-03** | Prisma ORM setup, models generation, and seed script (admin, masters, settings, templates) | Guide §4.2, §7.1 | Phase 1 | P1-T3 | Seed verification test | Verified |
+| **REQ-FND-04** | Express server core with Helmet, CORS, HPP, RateLimit, Morgan, Winston, and uniform error envelope | Guide §8, §9.1, §9.2 | Phase 1 | P1-T4 | App boot & middleware integration tests | Verified |
+| **REQ-FND-05** | Next.js 14 App Router client with customized Bootstrap 5 tokens, responsive layout & theme tokens | Master §7; Guide §12.4 | Phase 1 | P1-T5 | Client build & render check | Verified |
+| **REQ-AUT-01** | User authentication: login with email and password, bcrypt cost 12, issue access & refresh tokens | Guide §9.4, §10.1; PDF §4 | Phase 1 | P1-T6 | `auth.login.spec.ts` | Verified |
+| **REQ-AUT-02** | Account lockout after 5 consecutive failed attempts for 15 minutes (HTTP 423) | Master §9.15; Guide §9.4 | Phase 1 | P1-T6 | `auth.lockout.spec.ts` (F12) | Verified |
+| **REQ-AUT-03** | Rotating refresh tokens with reuse detection (revokes entire token family upon replay) | Master §9.5; Guide §10.1 | Phase 1 | P1-T7 | `auth.refresh.spec.ts` | Verified |
+| **REQ-AUT-04** | Logout revoking refresh token and clearing httpOnly cookies | Guide §10.1; PDF §4 | Phase 1 | P1-T7 | `auth.logout.spec.ts` | Verified |
+| **REQ-AUT-05** | Password reset flow: forgot password with anti-enumeration (always 200), single-use token valid 30m | Guide §10.1; Master §8 | Phase 1 | P1-T8 | `auth.reset.spec.ts` (F12) | Verified |
+| **REQ-AUT-06** | Change password and update profile (`/auth/me`, `/auth/change-password`) | Guide §10.1; PDF §4 | Phase 1 | P1-T8 | `auth.profile.spec.ts` | Verified |
+| **REQ-AUT-07** | Frontend AuthContext, `useAuth` hook, role-based route guard in Next.js `middleware.js` | Guide §12.1, §12.3 | Phase 1 | P1-T9 | Client auth guard integration test | Verified |
 | **REQ-MST-01** | Generic Masters REST API (`/masters/:type`) supporting 12 master entities with parent relations | Guide §7, §10.6; PDF §2 | Phase 2 | P2-T1 | `masters.api.spec.ts` (F10) | Planned |
 | **REQ-MST-02** | Master delete prevention: reject deletion (422) if record is referenced by active records | Master §10; Guide §10.6 | Phase 2 | P2-T1 | `masters.guard.spec.ts` (F10) | Planned |
 | **REQ-MST-03** | Cascading location endpoints and frontend selectors (Country -> State -> City) | Guide §10.6, §13.5 | Phase 2 | P2-T2 | `location.cascade.spec.ts` | Planned |

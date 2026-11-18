@@ -1,0 +1,610 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// =========================================================
+// MASTERS
+// =========================================================
+
+model industries {
+  id         Int         @id @default(autoincrement()) @db.UnsignedInt
+  name       String      @unique(map: "uq_industries_name") @db.VarChar(150)
+  is_active  Boolean     @default(true)
+  created_at DateTime    @default(now()) @db.Timestamp(0)
+  updated_at DateTime    @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at DateTime?   @db.Timestamp(0)
+  companies  companies[]
+}
+
+model company_types {
+  id         Int         @id @default(autoincrement()) @db.UnsignedInt
+  name       String      @unique(map: "uq_company_types_name") @db.VarChar(150)
+  is_active  Boolean     @default(true)
+  created_at DateTime    @default(now()) @db.Timestamp(0)
+  updated_at DateTime    @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at DateTime?   @db.Timestamp(0)
+  companies  companies[]
+}
+
+model job_categories {
+  id         Int          @id @default(autoincrement()) @db.UnsignedInt
+  name       String       @unique(map: "uq_job_categories_name") @db.VarChar(150)
+  is_active  Boolean      @default(true)
+  created_at DateTime     @default(now()) @db.Timestamp(0)
+  updated_at DateTime     @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at DateTime?    @db.Timestamp(0)
+  job_titles job_titles[]
+  jobs       jobs[]
+}
+
+model job_titles {
+  id          Int             @id @default(autoincrement()) @db.UnsignedInt
+  category_id Int?            @db.UnsignedInt
+  name        String          @db.VarChar(150)
+  is_active   Boolean         @default(true)
+  created_at  DateTime        @default(now()) @db.Timestamp(0)
+  updated_at  DateTime        @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at  DateTime?       @db.Timestamp(0)
+  category    job_categories? @relation(fields: [category_id], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "fk_job_titles_cat")
+  jobs        jobs[]
+
+  @@index([category_id], map: "idx_job_titles_cat")
+}
+
+model skills {
+  id               Int                @id @default(autoincrement()) @db.UnsignedInt
+  name             String             @unique(map: "uq_skills_name") @db.VarChar(150)
+  is_active        Boolean            @default(true)
+  created_at       DateTime           @default(now()) @db.Timestamp(0)
+  updated_at       DateTime           @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at       DateTime?          @db.Timestamp(0)
+  job_skills       job_skills[]
+  candidate_skills candidate_skills[]
+}
+
+model qualifications {
+  id         Int          @id @default(autoincrement()) @db.UnsignedInt
+  name       String       @unique(map: "uq_qualifications_name") @db.VarChar(150)
+  is_active  Boolean      @default(true)
+  created_at DateTime     @default(now()) @db.Timestamp(0)
+  updated_at DateTime     @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at DateTime?    @db.Timestamp(0)
+  jobs       jobs[]
+  candidates candidates[]
+}
+
+model employment_types {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  name       String    @unique(map: "uq_employment_types_name") @db.VarChar(150)
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+  jobs       jobs[]
+}
+
+model experience_levels {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  name       String    @db.VarChar(150)
+  min_years  Decimal?  @db.Decimal(4, 1)
+  max_years  Decimal?  @db.Decimal(4, 1)
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+}
+
+model candidate_sources {
+  id         Int          @id @default(autoincrement()) @db.UnsignedInt
+  name       String       @unique(map: "uq_candidate_sources_name") @db.VarChar(150)
+  is_active  Boolean      @default(true)
+  created_at DateTime     @default(now()) @db.Timestamp(0)
+  updated_at DateTime     @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at DateTime?    @db.Timestamp(0)
+  candidates candidates[]
+}
+
+model countries {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  name       String    @db.VarChar(120)
+  iso_code   String?   @db.VarChar(3)
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+  states     states[]
+}
+
+model states {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  country_id Int       @db.UnsignedInt
+  name       String    @db.VarChar(120)
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+  country    countries @relation(fields: [country_id], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "fk_states_country")
+  cities     cities[]
+
+  @@index([country_id], map: "idx_states_country")
+}
+
+model cities {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  state_id   Int       @db.UnsignedInt
+  name       String    @db.VarChar(120)
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+  state      states    @relation(fields: [state_id], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "fk_cities_state")
+  jobs       jobs[]
+
+  @@index([state_id], map: "idx_cities_state")
+}
+
+// =========================================================
+// USERS AND AUTH
+// =========================================================
+
+enum Role {
+  admin
+  staff
+  company
+}
+
+enum UserStatus {
+  active
+  inactive
+  blocked
+}
+
+model users {
+  id                 BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  name               String                     @db.VarChar(150)
+  email              String                     @unique(map: "uq_users_email") @db.VarChar(190)
+  mobile             String?                    @db.VarChar(20)
+  password_hash      String                     @db.VarChar(255)
+  role               Role
+  status             UserStatus                 @default(active)
+  failed_attempts    Int                        @default(0)
+  locked_until       DateTime?                  @db.DateTime(0)
+  last_login         DateTime?                  @db.DateTime(0)
+  created_at         DateTime                   @default(now()) @db.Timestamp(0)
+  updated_at         DateTime                   @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at         DateTime?                  @db.Timestamp(0)
+  refresh_tokens     refresh_tokens[]
+  password_resets    password_resets[]
+  user_permissions   user_permissions[]
+  company            companies?                 @relation("CompanyUser")
+  verified_companies companies[]                @relation("CompanyVerifier")
+  verification_logs  company_verification_logs[]
+  assigned_jobs      jobs[]                     @relation("AssignedStaff")
+  created_jobs       jobs[]                     @relation("JobCreator")
+  uploaded_cands     candidates[]               @relation("CandidateUploader")
+  mapped_cands       job_candidates[]           @relation("SubmittedBy")
+  mapping_histories  job_candidate_history[]    @relation("ChangedBy")
+  notifications      notifications[]
+
+  @@index([role, status], map: "idx_users_role")
+}
+
+model refresh_tokens {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt    @db.UnsignedBigInt
+  token_hash String    @unique(map: "uq_rt_hash") @db.Char(64)
+  family_id  String    @db.VarChar(64)
+  expires_at DateTime  @db.DateTime(0)
+  revoked_at DateTime? @db.DateTime(0)
+  user_agent String?   @db.VarChar(255)
+  ip         String?   @db.VarChar(45)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  user       users     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_rt_user")
+
+  @@index([user_id], map: "idx_rt_user")
+  @@index([family_id], map: "idx_rt_family")
+}
+
+model password_resets {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt    @db.UnsignedBigInt
+  token_hash String    @unique(map: "uq_pr_hash") @db.Char(64)
+  expires_at DateTime  @db.DateTime(0)
+  used_at    DateTime? @db.DateTime(0)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  user       users     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_pr_user")
+
+  @@index([user_id], map: "idx_pr_user")
+}
+
+model permissions {
+  id               Int                @id @default(autoincrement()) @db.UnsignedInt
+  code             String             @unique @db.VarChar(80)
+  description      String?            @db.VarChar(255)
+  user_permissions user_permissions[]
+}
+
+model user_permissions {
+  user_id       BigInt      @db.UnsignedBigInt
+  permission_id Int         @db.UnsignedInt
+  user          users       @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_up_user")
+  permission    permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade, map: "fk_up_perm")
+
+  @@id([user_id, permission_id])
+}
+
+// =========================================================
+// COMPANIES
+// =========================================================
+
+enum CompanyStatus {
+  pending
+  approved
+  rejected
+  need_info
+  suspended
+}
+
+enum CompanySize {
+  SIZE_1_10    @map("1-10")
+  SIZE_11_50   @map("11-50")
+  SIZE_51_200  @map("51-200")
+  SIZE_201_500 @map("201-500")
+  SIZE_501_1000 @map("501-1000")
+  SIZE_1000_PLUS @map("1000+")
+}
+
+model companies {
+  id                   BigInt                      @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id              BigInt                      @unique(map: "uq_companies_user") @db.UnsignedBigInt
+  company_name         String                      @db.VarChar(200)
+  industry_id          Int?                        @db.UnsignedInt
+  company_type_id      Int?                        @db.UnsignedInt
+  gst_no               String?                     @db.VarChar(20)
+  pan_no               String?                     @db.VarChar(15)
+  cin_no               String?                     @db.VarChar(25)
+  registration_year    Int?
+  company_size         CompanySize?
+  website              String?                     @db.VarChar(255)
+  address              String?                     @db.Text
+  country_id           Int?                        @db.UnsignedInt
+  state_id             Int?                        @db.UnsignedInt
+  city_id              Int?                        @db.UnsignedInt
+  pincode              String?                     @db.VarChar(12)
+  contact_person       String                      @db.VarChar(150)
+  contact_designation  String?                     @db.VarChar(100)
+  contact_email        String                      @db.VarChar(190)
+  contact_mobile       String                      @db.VarChar(20)
+  logo_path            String?                     @db.VarChar(255)
+  status               CompanyStatus               @default(pending)
+  needs_reverification Boolean                     @default(false)
+  verified_by          BigInt?                     @db.UnsignedBigInt
+  verified_at          DateTime?                   @db.DateTime(0)
+  remark               String?                     @db.Text
+  created_at           DateTime                    @default(now()) @db.Timestamp(0)
+  updated_at           DateTime                    @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at           DateTime?                   @db.Timestamp(0)
+
+  user                 users                       @relation("CompanyUser", fields: [user_id], references: [id], onDelete: Restrict, map: "fk_companies_user")
+  industry             industries?                 @relation(fields: [industry_id], references: [id], onDelete: Restrict, map: "fk_companies_industry")
+  company_type         company_types?              @relation(fields: [company_type_id], references: [id], onDelete: Restrict, map: "fk_companies_ctype")
+  verifier             users?                      @relation("CompanyVerifier", fields: [verified_by], references: [id], onDelete: Restrict, map: "fk_companies_verifier")
+  documents            company_documents[]
+  verification_logs    company_verification_logs[]
+  jobs                 jobs[]
+
+  @@index([status], map: "idx_companies_status")
+  @@index([company_name], map: "idx_companies_name")
+}
+
+enum DocType {
+  gst
+  pan
+  incorporation
+  other
+}
+
+model company_documents {
+  id            BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id    BigInt    @db.UnsignedBigInt
+  doc_type      DocType
+  original_name String    @db.VarChar(255)
+  file_path     String    @db.VarChar(255)
+  mime_type     String?   @db.VarChar(100)
+  size_bytes    Int?      @db.UnsignedInt
+  uploaded_at   DateTime  @default(now()) @db.Timestamp(0)
+  deleted_at    DateTime? @db.Timestamp(0)
+  company       companies @relation(fields: [company_id], references: [id], onDelete: Cascade, map: "fk_cd_company")
+
+  @@index([company_id], map: "idx_cd_company")
+}
+
+model company_verification_logs {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id BigInt    @db.UnsignedBigInt
+  old_status String?   @db.VarChar(20)
+  new_status String    @db.VarChar(20)
+  remark     String?   @db.Text
+  done_by    BigInt?   @db.UnsignedBigInt
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  company    companies @relation(fields: [company_id], references: [id], onDelete: Cascade, map: "fk_cvl_company")
+  user       users?    @relation(fields: [done_by], references: [id], onDelete: Restrict, map: "fk_cvl_user")
+
+  @@index([company_id], map: "idx_cvl_company")
+}
+
+// =========================================================
+// JOBS
+// =========================================================
+
+model job_sequences {
+  year        Int      @id
+  current_val Int      @default(0)
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamp(0)
+}
+
+enum WorkMode {
+  onsite
+  remote
+  hybrid
+}
+
+enum GenderPref {
+  any
+  male
+  female
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum JobStatus {
+  draft
+  open
+  in_progress
+  fulfilled
+  on_hold
+  closed
+}
+
+model jobs {
+  id                 BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  job_code           String            @unique(map: "uq_jobs_code") @db.VarChar(20)
+  company_id         BigInt            @db.UnsignedBigInt
+  title_id           Int?              @db.UnsignedInt
+  custom_title       String?           @db.VarChar(200)
+  category_id        Int?              @db.UnsignedInt
+  department         String?           @db.VarChar(120)
+  description        String?           @db.LongText
+  responsibilities   String?           @db.LongText
+  qualification_id   Int?              @db.UnsignedInt
+  exp_min            Decimal           @default(0.0) @db.Decimal(4, 1)
+  exp_max            Decimal?          @db.Decimal(4, 1)
+  salary_min         Decimal?          @db.Decimal(12, 2)
+  salary_max         Decimal?          @db.Decimal(12, 2)
+  currency           String            @default("INR") @db.Char(3)
+  employment_type_id Int?              @db.UnsignedInt
+  work_mode          WorkMode          @default(onsite)
+  city_id            Int?              @db.UnsignedInt
+  notice_period_pref String?           @db.VarChar(50)
+  gender_pref        GenderPref        @default(any)
+  positions_required Int               @default(1) @db.UnsignedInt
+  last_date          DateTime?         @db.Date
+  priority           Priority          @default(medium)
+  status             JobStatus         @default(open)
+  jd_file_path       String?           @db.VarChar(255)
+  assigned_staff_id  BigInt?           @db.UnsignedBigInt
+  created_by         BigInt            @db.UnsignedBigInt
+  fulfilled_at       DateTime?         @db.DateTime(0)
+  created_at         DateTime          @default(now()) @db.Timestamp(0)
+  updated_at         DateTime          @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at         DateTime?         @db.Timestamp(0)
+
+  company            companies         @relation(fields: [company_id], references: [id], onDelete: Restrict, map: "fk_jobs_company")
+  title              job_titles?       @relation(fields: [title_id], references: [id], onDelete: Restrict, map: "fk_jobs_title")
+  category           job_categories?   @relation(fields: [category_id], references: [id], onDelete: Restrict, map: "fk_jobs_category")
+  qualification      qualifications?   @relation(fields: [qualification_id], references: [id], onDelete: Restrict, map: "fk_jobs_qual")
+  employment_type    employment_types? @relation(fields: [employment_type_id], references: [id], onDelete: Restrict, map: "fk_jobs_emptype")
+  city               cities?           @relation(fields: [city_id], references: [id], onDelete: Restrict, map: "fk_jobs_city")
+  assigned_staff     users?            @relation("AssignedStaff", fields: [assigned_staff_id], references: [id], onDelete: Restrict, map: "fk_jobs_staff")
+  creator            users             @relation("JobCreator", fields: [created_by], references: [id], onDelete: Restrict, map: "fk_jobs_creator")
+  job_skills         job_skills[]
+  job_candidates     job_candidates[]
+
+  @@index([company_id], map: "idx_jobs_company")
+  @@index([status], map: "idx_jobs_status")
+  @@index([assigned_staff_id], map: "idx_jobs_staff")
+  @@index([last_date], map: "idx_jobs_last_date")
+}
+
+model job_skills {
+  job_id   BigInt @db.UnsignedBigInt
+  skill_id Int    @db.UnsignedInt
+  job      jobs   @relation(fields: [job_id], references: [id], onDelete: Cascade, map: "fk_js_job")
+  skill    skills @relation(fields: [skill_id], references: [id], onDelete: Restrict, map: "fk_js_skill")
+
+  @@id([job_id, skill_id])
+}
+
+// =========================================================
+// CANDIDATES
+// =========================================================
+
+enum Gender {
+  male
+  female
+  other
+}
+
+model candidates {
+  id                   BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  name                 String             @db.VarChar(150)
+  email                String             @db.VarChar(190)
+  mobile               String             @db.VarChar(20)
+  alt_mobile           String?            @db.VarChar(20)
+  gender               Gender?
+  dob                  DateTime?          @db.Date
+  current_location     String?            @db.VarChar(150)
+  preferred_location   String?            @db.VarChar(150)
+  total_experience     Decimal            @default(0.0) @db.Decimal(4, 1)
+  current_ctc          Decimal?           @db.Decimal(12, 2)
+  expected_ctc         Decimal?           @db.Decimal(12, 2)
+  notice_period_days   Int?
+  education            String?            @db.VarChar(255)
+  qualification_id     Int?               @db.UnsignedInt
+  current_company      String?            @db.VarChar(200)
+  current_designation  String?            @db.VarChar(150)
+  summary              String?            @db.Text
+  resume_path          String             @db.VarChar(255)
+  resume_original_name String?            @db.VarChar(255)
+  photo_path           String?            @db.VarChar(255)
+  source_id            Int?               @db.UnsignedInt
+  uploaded_by          BigInt             @db.UnsignedBigInt
+  created_at           DateTime           @default(now()) @db.Timestamp(0)
+  updated_at           DateTime           @default(now()) @updatedAt @db.Timestamp(0)
+  deleted_at           DateTime?          @db.Timestamp(0)
+
+  source               candidate_sources? @relation(fields: [source_id], references: [id], onDelete: Restrict, map: "fk_cand_source")
+  qualification        qualifications?    @relation(fields: [qualification_id], references: [id], onDelete: Restrict, map: "fk_cand_qual")
+  uploader             users              @relation("CandidateUploader", fields: [uploaded_by], references: [id], onDelete: Restrict, map: "fk_cand_uploader")
+  candidate_skills     candidate_skills[]
+  job_candidates       job_candidates[]
+
+  @@index([email], map: "idx_cand_email")
+  @@index([mobile], map: "idx_cand_mobile")
+  @@index([total_experience], map: "idx_cand_exp")
+}
+
+model candidate_skills {
+  candidate_id BigInt     @db.UnsignedBigInt
+  skill_id     Int        @db.UnsignedInt
+  candidate    candidates @relation(fields: [candidate_id], references: [id], onDelete: Cascade, map: "fk_cs_cand")
+  skill        skills     @relation(fields: [skill_id], references: [id], onDelete: Restrict, map: "fk_cs_skill")
+
+  @@id([candidate_id, skill_id])
+}
+
+// =========================================================
+// MAPPING
+// =========================================================
+
+enum MappingStatus {
+  submitted
+  viewed
+  shortlisted
+  confirmed
+  rejected
+  hold
+}
+
+model job_candidates {
+  id              BigInt                  @id @default(autoincrement()) @db.UnsignedBigInt
+  job_id          BigInt                  @db.UnsignedBigInt
+  candidate_id    BigInt                  @db.UnsignedBigInt
+  submitted_by    BigInt                  @db.UnsignedBigInt
+  match_score     Int?                    @db.UnsignedTinyInt
+  submission_note String?                 @db.Text
+  internal_note   String?                 @db.Text
+  status          MappingStatus           @default(submitted)
+  company_remark  String?                 @db.Text
+  acted_at        DateTime?               @db.DateTime(0)
+  joining_date    DateTime?               @db.Date
+  created_at      DateTime                @default(now()) @db.Timestamp(0)
+  updated_at      DateTime                @default(now()) @updatedAt @db.Timestamp(0)
+
+  job             jobs                    @relation(fields: [job_id], references: [id], onDelete: Restrict, map: "fk_jc_job")
+  candidate       candidates              @relation(fields: [candidate_id], references: [id], onDelete: Restrict, map: "fk_jc_cand")
+  user            users                   @relation("SubmittedBy", fields: [submitted_by], references: [id], onDelete: Restrict, map: "fk_jc_user")
+  history         job_candidate_history[]
+
+  @@unique([job_id, candidate_id], map: "uq_job_candidate")
+  @@index([status], map: "idx_jc_status")
+  @@index([candidate_id], map: "idx_jc_candidate")
+}
+
+model job_candidate_history {
+  id               BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  job_candidate_id BigInt         @db.UnsignedBigInt
+  old_status       String?        @db.VarChar(20)
+  new_status       String         @db.VarChar(20)
+  remark           String?        @db.Text
+  changed_by       BigInt         @db.UnsignedBigInt
+  created_at       DateTime       @default(now()) @db.Timestamp(0)
+
+  job_candidate    job_candidates @relation(fields: [job_candidate_id], references: [id], onDelete: Cascade, map: "fk_jch_jc")
+  user             users          @relation("ChangedBy", fields: [changed_by], references: [id], onDelete: Restrict, map: "fk_jch_user")
+
+  @@index([job_candidate_id], map: "idx_jch_jc")
+}
+
+// =========================================================
+// SYSTEM
+// =========================================================
+
+model notifications {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt   @db.UnsignedBigInt
+  title      String   @db.VarChar(200)
+  message    String   @db.VarChar(500)
+  type       String   @db.VarChar(50)
+  ref_type   String?  @db.VarChar(30)
+  ref_id     BigInt?  @db.UnsignedBigInt
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+
+  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_notif_user")
+
+  @@index([user_id, is_read, created_at], map: "idx_notif_user")
+}
+
+enum AuditAction {
+  create
+  update
+  delete
+  status_change
+  login
+  logout
+  export
+}
+
+model audit_logs {
+  id         BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt?     @db.UnsignedBigInt
+  action     AuditAction
+  module     String      @db.VarChar(40)
+  record_id  BigInt?     @db.UnsignedBigInt
+  old_value  Json?
+  new_value  Json?
+  ip         String?     @db.VarChar(45)
+  user_agent String?     @db.VarChar(255)
+  created_at DateTime    @default(now()) @db.Timestamp(0)
+
+  @@index([module, record_id], map: "idx_audit_module")
+  @@index([user_id], map: "idx_audit_user")
+  @@index([created_at], map: "idx_audit_created")
+}
+
+model email_templates {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  code       String   @unique @db.VarChar(60)
+  subject    String   @db.VarChar(200)
+  body_html  String   @db.MediumText
+  is_active  Boolean  @default(true)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamp(0)
+}
+
+model settings {
+  key        String   @id @db.VarChar(80)
+  value      String?  @db.Text
+  updated_by BigInt?  @db.UnsignedBigInt
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamp(0)
+}

@@ -1,0 +1,240 @@
+/* =========================================================
+   RECRUITMENT PORTAL DESIGN SYSTEM TOKENS (docs/DESIGN.md)
+   ========================================================= */
+
+:root {
+  /* Brand Palette */
+  --rp-brand-primary: #1A44C2;
+  --rp-brand-primary-hover: #133496;
+  --rp-brand-dark: #0E1726;
+  --rp-surface-bg: #F8FAFC;
+  --rp-surface-card: #FFFFFF;
+  --rp-border-subtle: #E2E8F0;
+  --rp-text-main: #1E293B;
+  --rp-text-muted: #64748B;
+
+  /* Semantic Status Colors */
+  --rp-status-success-bg: #F0FDF4;
+  --rp-status-success-text: #0D9488;
+  --rp-status-success-border: #BBF7D0;
+
+  --rp-status-warning-bg: #FFFBEB;
+  --rp-status-warning-text: #D97706;
+  --rp-status-warning-border: #FDE68A;
+
+  --rp-status-danger-bg: #FFF1F2;
+  --rp-status-danger-text: #E11D48;
+  --rp-status-danger-border: #FECDD3;
+
+  --rp-status-info-bg: #F0F9FF;
+  --rp-status-info-text: #0284C7;
+  --rp-status-info-border: #BAE6FD;
+
+  --rp-status-neutral-bg: #F1F5F9;
+  --rp-status-neutral-text: #475569;
+  --rp-status-neutral-border: #CBD5E1;
+
+  /* Elevation Shadows */
+  --rp-shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+  --rp-shadow-hover: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+
+  /* Overrides for Bootstrap Primary */
+  --bs-primary: #1A44C2;
+  --bs-primary-rgb: 26, 68, 194;
+  --bs-body-font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --bs-body-bg: var(--rp-surface-bg);
+  --bs-body-color: var(--rp-text-main);
+}
+
+body {
+  font-family: var(--bs-body-font-family);
+  background-color: var(--rp-surface-bg);
+  color: var(--rp-text-main);
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Accessible Keyboard Focus Rings */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--rp-brand-primary) !important;
+  outline-offset: 2px !important;
+}
+
+/* Sidebar Styles */
+.rp-sidebar {
+  width: 260px;
+  background-color: var(--rp-brand-dark);
+  color: #FFFFFF;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.2s ease;
+}
+
+.rp-sidebar-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+}
+
+.rp-sidebar-nav {
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex-grow: 1;
+}
+
+.rp-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  color: #94A3B8;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.15s ease-in-out;
+}
+
+.rp-nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #FFFFFF;
+}
+
+.rp-nav-item.active {
+  background-color: var(--rp-brand-primary);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* Top Navbar */
+.rp-navbar {
+  height: 64px;
+  background-color: var(--rp-surface-card);
+  border-bottom: 1px solid var(--rp-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+}
+
+/* Card Styling */
+.rp-card {
+  background-color: var(--rp-surface-card);
+  border: 1px solid var(--rp-border-subtle);
+  border-radius: 8px;
+  box-shadow: var(--rp-shadow-card);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.rp-card:hover {
+  box-shadow: var(--rp-shadow-hover);
+}
+
+/* Status Badges */
+.rp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+}
+
+.rp-badge-success {
+  background-color: var(--rp-status-success-bg);
+  color: var(--rp-status-success-text);
+  border-color: var(--rp-status-success-border);
+}
+
+.rp-badge-warning {
+  background-color: var(--rp-status-warning-bg);
+  color: var(--rp-status-warning-text);
+  border-color: var(--rp-status-warning-border);
+}
+
+.rp-badge-danger {
+  background-color: var(--rp-status-danger-bg);
+  color: var(--rp-status-danger-text);
+  border-color: var(--rp-status-danger-border);
+}
+
+.rp-badge-info {
+  background-color: var(--rp-status-info-bg);
+  color: var(--rp-status-info-text);
+  border-color: var(--rp-status-info-border);
+}
+
+.rp-badge-neutral {
+  background-color: var(--rp-status-neutral-bg);
+  color: var(--rp-status-neutral-text);
+  border-color: var(--rp-status-neutral-border);
+}
+
+/* Data Table Clean Styling */
+.rp-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.rp-table th {
+  background-color: #F8FAFC;
+  color: var(--rp-text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--rp-border-subtle);
+  border-top: 1px solid var(--rp-border-subtle);
+}
+
+.rp-table td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--rp-border-subtle);
+  font-size: 0.875rem;
+}
+
+.rp-table tr:hover td {
+  background-color: #F8FAFC;
+}
+
+/* Button Overrides */
+.btn-primary {
+  background-color: var(--rp-brand-primary);
+  border-color: var(--rp-brand-primary);
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+}
+
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+  background-color: var(--rp-brand-primary-hover) !important;
+  border-color: var(--rp-brand-primary-hover) !important;
+}
+
+/* Skeleton Loading Animation */
+.rp-skeleton {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
