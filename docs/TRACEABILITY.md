@@ -22,12 +22,12 @@ Status values: `Planned` | `In Progress` | `Verified` | `Not met` (with reason).
 | **REQ-MST-03** | Cascading location endpoints and frontend selectors (Country -> State -> City) | Guide §10.6, §13.5 | Phase 2 | P2-T2 | `location.cascade.spec.ts` | Verified |
 | **REQ-MST-04** | Staff & Admin User management (CRUD, status toggle, reset password, last-admin protection) | Guide §10.7, §11.18; PDF §2 | Phase 2 | P2-T3 | `users.admin.spec.ts` | Verified |
 | **REQ-MST-05** | Reusable frontend components: `DataTable`, `FilterBar`, `ConfirmModal`, `StatusBadge` | Master §7; Guide §12.4, §13.5 | Phase 2 | P2-T4 | UI component test suite | Verified |
-| **REQ-CMP-01** | Multi-step Company Registration with document uploads (GST, PAN, Incorporation, Logo) | Guide §10.1, §13.1; PDF §4 | Phase 3 | P3-T1 | `company.register.spec.ts` (F1) | Planned |
-| **REQ-CMP-02** | Pending verification state enforcement: company can only view pending status & edit profile/docs | Master §4; Guide §11.1 | Phase 3 | P3-T2 | `company.pending.spec.ts` (F1) | Planned |
-| **REQ-CMP-03** | Company verification workflows by Admin/Staff (Approve, Reject, Need Info, Suspend) with mandatory remarks | Guide §6.1, §10.2; PDF §4 | Phase 3 | P3-T3 | `company.verify.spec.ts` (F2, F3) | Planned |
-| **REQ-CMP-04** | Company verification logs audit trail (`company_verification_logs`) recording verifier & remarks | Guide §6.1, §7; PDF §4 | Phase 3 | P3-T3 | `company.verify.log.spec.ts` (F2) | Planned |
-| **REQ-CMP-05** | Re-verification flag triggered when approved company modifies name, GST, or PAN | Master §9.9; Guide §10.2 | Phase 3 | P3-T4 | `company.reverify.spec.ts` | Planned |
-| **REQ-CMP-06** | In-app and Email notifications for company verification lifecycle events | Guide §15.2; PDF §4 | Phase 3 | P3-T5 | `notify.company.spec.ts` (F2) | Planned |
+| **REQ-CMP-01** | Multi-step Company Registration with document uploads (GST, PAN, Incorporation, Logo) | Guide §10.1, §13.1; PDF §4 | Phase 3 | P3-T1 | `companies.test.js` (F1) | Verified |
+| **REQ-CMP-02** | Pending verification state enforcement: company can only view pending status & edit profile/docs | Master §4; Guide §11.1 | Phase 3 | P3-T2 | `companies.test.js` (F1) | Verified |
+| **REQ-CMP-03** | Company verification workflows by Admin/Staff (Approve, Reject, Need Info, Suspend) with mandatory remarks | Guide §6.1, §10.2; PDF §4 | Phase 3 | P3-T3 | `companies.test.js` (F2, F3) | Verified |
+| **REQ-CMP-04** | Company verification logs audit trail (`company_verification_logs`) recording verifier & remarks | Guide §6.1, §7; PDF §4 | Phase 3 | P3-T3 | `companies.test.js` (F2) | Verified |
+| **REQ-CMP-05** | Re-verification flag triggered when approved company modifies name, GST, or PAN | Master §9.9; Guide §10.2 | Phase 3 | P3-T4 | `companies.test.js` | Verified |
+| **REQ-CMP-06** | In-app and Email notifications for company verification lifecycle events | Guide §15.2; PDF §4 | Phase 3 | P3-T5 | `companies.test.js` (F2) | Verified |
 | **REQ-JOB-01** | Job creation by approved Company, Admin, or Staff with auto-generated sequential `job_code` | Master §9.2; Guide §9.6, §10.3 | Phase 4 | P4-T1 | `jobs.create.spec.ts` (F4) | Planned |
 | **REQ-JOB-02** | Concurrency-safe job code generation using sequence lock table | Master §9.2 | Phase 4 | P4-T1 | `jobs.code.race.spec.ts` (F4) | Planned |
 | **REQ-JOB-03** | Rich text sanitization (`sanitize-html`) on job description and responsibilities | Master §8.3; Guide §10.3 | Phase 4 | P4-T2 | `jobs.xss.sanitize.spec.ts` | Planned |

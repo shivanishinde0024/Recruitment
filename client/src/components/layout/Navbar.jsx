@@ -3,6 +3,7 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import StatusBadge from '../ui/StatusBadge';
+import NotificationBell from './NotificationBell';
 
 export default function Navbar({ onToggleSidebar }) {
   const { user, logout } = useAuth();
@@ -32,6 +33,8 @@ export default function Navbar({ onToggleSidebar }) {
             <StatusBadge status={user.company.status} />
           </div>
         )}
+
+        {user && <NotificationBell />}
 
         <div className="d-flex align-items-center gap-2">
           <div className="text-end d-none d-sm-block">

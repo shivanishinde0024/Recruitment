@@ -4,6 +4,8 @@ const router = express.Router();
 const authRoutes = require('./modules/auth/auth.routes');
 const mastersRoutes = require('./modules/masters/masters.routes');
 const usersRoutes = require('./modules/users/users.routes');
+const companiesRoutes = require('./modules/companies/companies.routes');
+const notificationsRoutes = require('./modules/notifications/notifications.routes');
 
 // System Health Check
 router.get('/health', (req, res) => {
@@ -18,5 +20,7 @@ router.get('/health', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/masters', mastersRoutes);
 router.use('/users', usersRoutes);
+router.use('/companies', companiesRoutes);
+router.use('/notifications', notificationsRoutes);
 
 module.exports = router;

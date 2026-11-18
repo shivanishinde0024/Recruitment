@@ -111,6 +111,19 @@ class InMemoryTable {
       });
     }
 
+    if (include.documents) {
+      enriched.documents = await this.client.company_documents.findMany({
+        where: { company_id: record.id, deleted_at: null }
+      });
+    }
+
+    if (include.verification_logs) {
+      enriched.verification_logs = await this.client.company_verification_logs.findMany({
+        where: { company_id: record.id },
+        include: include.verification_logs.include
+      });
+    }
+
     return enriched;
   }
 

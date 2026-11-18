@@ -12,9 +12,21 @@ const {
   changePasswordSchema,
   updateProfileSchema
 } = require('./auth.schema');
+const { createUploader } = require('../../middleware/upload');
+const { companyRegisterSchema } = require('../companies/companies.schema');
+const companiesController = require('../companies/companies.controller');
+
+const docUploader = createUploader('doc');
+const registerUpload = docUploader.fields([
+  { name: 'logo', maxCount: 1 },
+  { name: 'gst_doc', maxCount: 1 },
+  { name: 'pan_doc', maxCount: 1 },
+  { name: 'incorporation_doc', maxCount: 1 }
+]);
 
 // Public endpoints
 router.post('/login', validate(loginSchema), asyncHandler(authController.login));
+router.post('/register-company', registerUpload, validate(companyRegisterSchema), companiesController.register);
 router.post('/refresh', asyncHandler(authController.refresh));
 router.post('/logout', asyncHandler(authController.logout));
 router.post('/forgot-password', validate(forgotPasswordSchema), asyncHandler(authController.forgotPassword));
