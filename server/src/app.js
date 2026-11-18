@@ -51,6 +51,49 @@ const authLimiter = rateLimit({
 
 app.use('/api/v1/auth', authLimiter);
 
+// Mount API Documentation in non-production
+if (NODE_ENV !== 'production') {
+  const path = require('path');
+  const openApiSpec = require('./docs/openapi.json');
+
+  app.get('/api/docs/openapi.json', (req, res) => {
+    res.json(openApiSpec);
+  });
+
+  app.get('/api/docs', (req, res) => {
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Recruitment Portal API Documentation</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+  <style>
+    body { margin: 0; background: #fafafa; }
+    .topbar { display: none; }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
+  <script>
+    window.onload = () => {
+      SwaggerUIBundle({
+        url: '/api/docs/openapi.json',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIBundle.SwaggerUIStandalonePreset
+        ],
+        layout: "BaseLayout"
+      });
+    };
+  </script>
+</body>
+</html>`);
+  });
+}
+
 // Mount API v1 Routes
 app.use('/api/v1', routes);
 

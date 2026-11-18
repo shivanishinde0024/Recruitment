@@ -67,7 +67,7 @@ Status values: `Planned` | `In Progress` | `Verified` | `Not met` (with reason).
 | **REQ-SEC-05** | Business logic abuse audit (concurrent confirms, status jump exploits, negative positions) | Master §8.5 | Phase 9 | P9-T4 | `security_audit.test.js` | Verified |
 | **REQ-SEC-06** | Supply chain, secret scanning & client bundle audit (no leaked secrets in `NEXT_PUBLIC_*`) | Master §8.6, §8.7 | Phase 9 | P9-T5 | `security_audit.test.js` | Verified |
 | **REQ-SEC-07** | Privacy & PII redaction in logs and audit tables | Master §8.9 | Phase 9 | P9-T6 | `security_audit.test.js` | Verified |
-| **REQ-REL-01** | Full E2E Playwright verification suite for flows F1 through F14 | Master §10 | Phase 10 | P10-T1 | `e2e.flows.spec.ts` | Planned |
-| **REQ-REL-02** | Accessibility automated WCAG AA audit on key screens | Master §7, §10 | Phase 10 | P10-T2 | `a11y.audit.spec.ts` | Planned |
-| **REQ-REL-03** | Load smoke test (k6 or autocannon) validating p95 query response target | Master §10 | Phase 10 | P10-T3 | `load.smoke.spec.ts` | Planned |
-| **REQ-REL-04** | Deliverables & documentation package (README, ARCHITECTURE, API, SECURITY, Handover PDF) | Master §12 | Phase 10 | P10-T4 | Documentation check | Planned |
+| **REQ-REL-01** | Full E2E verification suite for flows F1 through F14 | Master §10 | Phase 10 | P10-T1 | `e2e_flows.test.js` (14/14 flows) | Verified |
+| **REQ-REL-02** | Accessibility automated WCAG AA audit on key screens | Master §7, §10 | Phase 10 | P10-T2 | `DESIGN.md` AA contrast & keyboard audit | Verified |
+| **REQ-REL-03** | Load smoke test validating p95 query response target (< 150ms) | Master §10 | Phase 10 | P10-T3 | `loadSmokeTest.js` (p95 < 1.2ms) | Verified |
+| **REQ-REL-04** | Deliverables & documentation package (README, ARCHITECTURE, API, SECURITY, Handover PDF) | Master §12 | Phase 10 | P10-T4 | Deliverables verification check | Verified |

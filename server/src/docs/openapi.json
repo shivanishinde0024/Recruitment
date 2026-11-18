@@ -1,0 +1,288 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Recruitment Portal REST API",
+    "version": "1.0.0",
+    "description": "Production REST API for Enterprise Recruitment Portal with role-based access control, algorithmic candidate matching, and full audit logging."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api/v1",
+      "description": "Development API Gateway"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Short-lived JWT Access Token (15m validity)"
+      },
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "access_token",
+        "description": "HttpOnly SameSite Access Cookie"
+      }
+    },
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "message": { "type": "string", "example": "Operation completed successfully" },
+          "data": { "type": "object" },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": { "type": "integer", "example": 100 },
+              "page": { "type": "integer", "example": 1 },
+              "limit": { "type": "integer", "example": 20 },
+              "totalPages": { "type": "integer", "example": 5 }
+            }
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "error": { "type": "string", "example": "ResourceNotFound" },
+          "message": { "type": "string", "example": "Requested entity not found" },
+          "details": { "type": "array", "items": { "type": "object" } }
+        }
+      }
+    }
+  },
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "tags": ["System"],
+        "security": [],
+        "responses": {
+          "200": { "description": "Server is healthy" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "User login with dual-token issuance",
+        "tags": ["Auth"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful" },
+          "401": { "description": "Invalid credentials" },
+          "423": { "description": "Account locked after 5 failed attempts" }
+        }
+      }
+    },
+    "/auth/register-company": {
+      "post": {
+        "summary": "Self-service company registration with multipart document upload",
+        "tags": ["Auth"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password", "mobile", "contact_person", "contact_email", "contact_mobile"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" },
+                  "mobile": { "type": "string" },
+                  "contact_person": { "type": "string" },
+                  "contact_email": { "type": "string", "format": "email" },
+                  "contact_mobile": { "type": "string" },
+                  "gst_no": { "type": "string" },
+                  "pan_no": { "type": "string" },
+                  "doc_gst": { "type": "string", "format": "binary" },
+                  "doc_pan": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Company registration submitted (pending verification)" }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "summary": "Rotate refresh token and issue new access token",
+        "tags": ["Auth"],
+        "security": [],
+        "responses": {
+          "200": { "description": "Tokens rotated" },
+          "401": { "description": "Invalid or revoked token" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Get authenticated user profile",
+        "tags": ["Auth"],
+        "responses": {
+          "200": { "description": "Current profile" }
+        }
+      }
+    },
+    "/masters/{type}": {
+      "get": {
+        "summary": "List active master records",
+        "tags": ["Masters"],
+        "parameters": [
+          { "name": "type", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Master items list" }
+        }
+      }
+    },
+    "/jobs": {
+      "get": {
+        "summary": "List job requisitions with multi-tenant filtering",
+        "tags": ["Jobs"],
+        "responses": {
+          "200": { "description": "Jobs list" }
+        }
+      },
+      "post": {
+        "summary": "Create new job requisition (Approved Company, Admin, Staff)",
+        "tags": ["Jobs"],
+        "responses": {
+          "201": { "description": "Job created" }
+        }
+      }
+    },
+    "/jobs/{id}/suggested-candidates": {
+      "get": {
+        "summary": "Algorithmic candidate recommendations scored 0-100",
+        "tags": ["Jobs", "Mappings"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Ranked candidates" }
+        }
+      }
+    },
+    "/candidates": {
+      "get": {
+        "summary": "Search candidates with FULLTEXT / parameterized LIKE query",
+        "tags": ["Candidates"],
+        "responses": {
+          "200": { "description": "Candidates list" }
+        }
+      },
+      "post": {
+        "summary": "Upload candidate with single resume PDF/DOCX",
+        "tags": ["Candidates"],
+        "responses": {
+          "201": { "description": "Candidate created" }
+        }
+      }
+    },
+    "/candidates/bulk-upload": {
+      "post": {
+        "summary": "Bulk upload candidates via Excel spreadsheet + Zip archive",
+        "tags": ["Candidates"],
+        "responses": {
+          "200": { "description": "Row-by-row import results report" }
+        }
+      }
+    },
+    "/mappings": {
+      "post": {
+        "summary": "Map candidate(s) to job requisition (Admin / Staff)",
+        "tags": ["Mappings"],
+        "responses": {
+          "201": { "description": "Candidates mapped and notifications dispatched" }
+        }
+      }
+    },
+    "/mappings/{id}/review": {
+      "patch": {
+        "summary": "Company candidate review (viewed, shortlisted, confirmed, rejected, hold)",
+        "tags": ["Mappings"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Review status updated" }
+        }
+      }
+    },
+    "/reports/admin-company-wise": {
+      "get": {
+        "summary": "Decoupled Company-Wise pipeline analytics (Admin & Staff)",
+        "tags": ["Reports"],
+        "responses": {
+          "200": { "description": "Aggregated metrics" }
+        }
+      }
+    },
+    "/reports/export": {
+      "get": {
+        "summary": "Export report with anti-formula injection sanitization",
+        "tags": ["Reports"],
+        "parameters": [
+          { "name": "format", "in": "query", "schema": { "type": "string", "enum": ["csv", "xlsx"] } }
+        ],
+        "responses": {
+          "200": { "description": "CSV/XLSX file stream" }
+        }
+      }
+    },
+    "/audit-logs": {
+      "get": {
+        "summary": "List centralized immutable audit logs with before/after diffs",
+        "tags": ["Audit"],
+        "responses": {
+          "200": { "description": "Audit entries" }
+        }
+      }
+    },
+    "/trash": {
+      "get": {
+        "summary": "View soft-deleted companies, jobs, and candidates",
+        "tags": ["Trash"],
+        "responses": {
+          "200": { "description": "Trash items" }
+        }
+      }
+    },
+    "/settings": {
+      "get": {
+        "summary": "Get system settings (branding, policies, SMTP)",
+        "tags": ["Settings"],
+        "responses": {
+          "200": { "description": "Settings object" }
+        }
+      }
+    }
+  }
+}

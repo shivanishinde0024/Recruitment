@@ -26,4 +26,17 @@ describe('Integration: App Bootstrap & Global Middleware', () => {
     expect(res.body.success).toBe(false);
     expect(res.body.message).toBe('Malformed JSON body');
   });
+
+  it('GET /api/docs should serve Swagger UI documentation in non-production', async () => {
+    const res = await request(app).get('/api/docs');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('SwaggerUIBundle');
+  });
+
+  it('GET /api/docs/openapi.json should serve OpenAPI specification', async () => {
+    const res = await request(app).get('/api/docs/openapi.json');
+    expect(res.status).toBe(200);
+    expect(res.body.openapi).toBe('3.0.3');
+    expect(res.body.info.title).toContain('Recruitment Portal REST API');
+  });
 });
