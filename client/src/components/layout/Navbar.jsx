@@ -1,12 +1,24 @@
 'use client';
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import StatusBadge from '../ui/StatusBadge';
 import NotificationBell from './NotificationBell';
 
 export default function Navbar({ onToggleSidebar }) {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
+
+  const routeRole = pathname?.startsWith('/admin')
+    ? 'admin'
+    : pathname?.startsWith('/staff')
+    ? 'staff'
+    : pathname?.startsWith('/company')
+    ? 'company'
+    : null;
+  const currentRole = user?.role || routeRole || 'admin';
+  const displayName = user?.name || (currentRole === 'admin' ? 'System Administrator' : (currentRole === 'staff' ? 'Staff Recruiter' : (currentRole === 'company' ? 'Company Manager' : 'User')));
 
   return (
     <header className="rp-navbar">
@@ -39,14 +51,14 @@ export default function Navbar({ onToggleSidebar }) {
         <div className="d-flex align-items-center gap-2">
           <div className="text-end d-none d-sm-block">
             <a
-              href={`/${user?.role || 'admin'}/profile`}
+              href={`/${currentRole}/profile`}
               className="fw-semibold small text-decoration-none text-dark hover-primary"
               title="Account Settings & Profile"
             >
-              {user?.name || 'User'}
+              {displayName}
             </a>
             <div className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>
-              {user?.role || 'Guest'}
+              {currentRole}
             </div>
           </div>
 

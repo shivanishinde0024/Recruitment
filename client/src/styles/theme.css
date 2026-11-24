@@ -91,6 +91,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   letter-spacing: -0.02em;
 }
 
+.rp-brand-link {
+  transition: opacity 0.2s ease;
+}
+.rp-brand-link:hover {
+  opacity: 0.85;
+  color: #fff !important;
+}
+
 .rp-sidebar-nav {
   padding: 1rem 0.75rem;
   display: flex;

@@ -5,15 +5,24 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import api from '../../../services/api';
 import LocationCascade from '../../../components/forms/LocationCascade';
+import { useAuth } from '../../../context/AuthContext';
 
 const TOTAL_STEPS = 5;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+
+  // If already authenticated, redirect to appropriate role dashboard
+  useEffect(() => {
+    if (!authLoading && user?.role) {
+      router.replace(`/${user.role}/dashboard`);
+    }
+  }, [user, authLoading, router]);
 
   // Master dropdown data
   const [industries, setIndustries] = useState([]);
@@ -209,6 +218,15 @@ export default function RegisterPage() {
     <div className="container py-5">
       <div className="row justify-content-center">
         <div className="col-lg-8">
+          <div className="mb-3">
+            <Link
+              href="/"
+              className="text-decoration-none small text-muted d-inline-flex align-items-center gap-1"
+              title="Return to Landing Page"
+            >
+              ← Back to SQA Academy Home
+            </Link>
+          </div>
           <div className="card shadow-sm border-0 p-4">
             {/* Header & Stepper */}
             <div className="mb-4">

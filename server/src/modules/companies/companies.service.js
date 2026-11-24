@@ -6,6 +6,40 @@ const { parsePagination, buildMeta } = require('../../utils/pagination');
 const { recordAudit } = require('../../middleware/audit');
 const { notify } = require('../../services/notify.service');
 
+const COMPANY_SIZE_TO_ENUM = {
+  '1-10': 'SIZE_1_10',
+  '11-50': 'SIZE_11_50',
+  '51-200': 'SIZE_51_200',
+  '201-500': 'SIZE_201_500',
+  '501-1000': 'SIZE_501_1000',
+  '1000+': 'SIZE_1000_PLUS',
+  'SIZE_1_10': 'SIZE_1_10',
+  'SIZE_11_50': 'SIZE_11_50',
+  'SIZE_51_200': 'SIZE_51_200',
+  'SIZE_201_500': 'SIZE_201_500',
+  'SIZE_501_1000': 'SIZE_501_1000',
+  'SIZE_1000_PLUS': 'SIZE_1000_PLUS'
+};
+
+const ENUM_TO_COMPANY_SIZE = {
+  'SIZE_1_10': '1-10',
+  'SIZE_11_50': '11-50',
+  'SIZE_51_200': '51-200',
+  'SIZE_201_500': '201-500',
+  'SIZE_501_1000': '501-1000',
+  'SIZE_1000_PLUS': '1000+'
+};
+
+function normalizeCompanySize(val) {
+  if (!val) return null;
+  return COMPANY_SIZE_TO_ENUM[val] || null;
+}
+
+function formatCompanySize(val) {
+  if (!val) return null;
+  return ENUM_TO_COMPANY_SIZE[val] || val;
+}
+
 async function registerCompany(data, files = {}, req = null) {
   const email = data.email.toLowerCase().trim();
   const companyName = data.company_name.trim();
@@ -71,7 +105,7 @@ async function registerCompany(data, files = {}, req = null) {
         pan_no: data.pan_no ? data.pan_no.trim() : null,
         cin_no: data.cin_no ? data.cin_no.trim() : null,
         registration_year: data.registration_year ? parseInt(data.registration_year, 10) : null,
-        company_size: data.company_size || null,
+        company_size: normalizeCompanySize(data.company_size),
         website: data.website || null,
         address: data.address || null,
         country_id: data.country_id ? parseInt(data.country_id, 10) : null,
@@ -196,7 +230,10 @@ async function listCompanies(query = {}, currentUser) {
   ]);
 
   return {
-    items,
+    items: items.map((c) => ({
+      ...c,
+      company_size: formatCompanySize(c.company_size)
+    })),
     meta: buildMeta(page, limit, total)
   };
 }
@@ -226,7 +263,10 @@ async function getCompanyById(id, currentUser) {
     throw new ApiError(404, 'Company profile not found');
   }
 
-  return company;
+  return {
+    ...company,
+    company_size: formatCompanySize(company.company_size)
+  };
 }
 
 /**
@@ -349,6 +389,9 @@ async function updateCompany(id, data, currentUser, req = null) {
   }
 
   const payload = { ...data };
+  if (payload.company_size !== undefined) {
+    payload.company_size = normalizeCompanySize(payload.company_size);
+  }
 
   // Ruling 3.9: If approved and key legal identifiers are altered, flag for re-verification
   if (existing.status === 'approved') {

@@ -21,6 +21,8 @@ export default function AdminDashboardPage() {
       const res = await api.get('/reports/company-wise');
       if (res.data?.success) {
         setData(res.data.data);
+      } else {
+        setError('Failed to load company-wise dashboard');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load company-wise dashboard');

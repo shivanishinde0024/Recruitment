@@ -28,7 +28,17 @@ function sanitizeHtml(dirty) {
   return clean.trim();
 }
 
+function sanitizeCsvField(val) {
+  if (val === null || val === undefined) return '';
+  const str = String(val);
+  if (/^[=+@\-\t\r]/.test(str)) {
+    return `'${str}`;
+  }
+  return str;
+}
+
 module.exports = {
-  sanitizeHtml
+  sanitizeHtml,
+  sanitizeCsvField
 };
 

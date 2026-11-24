@@ -415,6 +415,18 @@ async function seedDatabase(prisma) {
       });
     }
 
+    const mapCompanySize = (val) => {
+      const m = {
+        '1-10': 'SIZE_1_10',
+        '11-50': 'SIZE_11_50',
+        '51-200': 'SIZE_51_200',
+        '201-500': 'SIZE_201_500',
+        '501-1000': 'SIZE_501_1000',
+        '1000+': 'SIZE_1000_PLUS'
+      };
+      return m[val] || val;
+    };
+
     let comp = await prisma.companies.findFirst({ where: { user_id: companyUser.id } });
     if (!comp) {
       comp = await prisma.companies.create({
@@ -426,7 +438,7 @@ async function seedDatabase(prisma) {
           gst_no: c.gst_no,
           pan_no: c.pan_no,
           cin_no: c.cin_no,
-          company_size: c.company_size,
+          company_size: mapCompanySize(c.company_size),
           status: c.status,
           remark: c.remark,
           contact_person: c.contact_person,
@@ -850,6 +862,119 @@ async function seedDatabase(prisma) {
     });
   }
   console.log('✓ Trash sample record verified/seeded');
+
+  // 12. Seed Success Quest Academy (SQA) Verified Certificates & Sample Leads
+  const sqaCertificates = [
+    {
+      code: 'SQA-2026-AI01',
+      student_name: 'Dr. Vivek Ranade',
+      program: 'Applied Artificial Intelligence & Prompt Engineering',
+      pillar: 'Pillar 4: Applied AI & Data Intelligence',
+      issue_date: 'January 15, 2026',
+      grade: 'Master Fellow (99.2%)',
+      status: 'VALID',
+      badge: 'Executive Fellow'
+    },
+    {
+      code: 'SQA-2026-STATS02',
+      student_name: 'Aarav Sharma',
+      program: 'Advanced Spreadsheet Engineering & Data Analytics',
+      pillar: 'Pillar 1: Engineering & Emerging Technologies',
+      issue_date: 'February 20, 2026',
+      grade: 'High Distinction (97.5%)',
+      status: 'VALID',
+      badge: 'Distinguished Scholar'
+    },
+    {
+      code: 'SQA-AI-2024-8842',
+      student_name: 'Dr. Evelyn Reed',
+      program: 'Autonomous Agent Architecture & Multi-Agent Swarms',
+      pillar: 'Pillar 4: Applied AI & Data Intelligence',
+      issue_date: 'October 14, 2024',
+      grade: 'Master Fellow (98.4%)',
+      status: 'VALID',
+      badge: 'Founding Fellow'
+    },
+    {
+      code: 'SQA-FS-2024-1092',
+      student_name: 'Alex Chen',
+      program: 'Cloud-Native Full-Stack Engineering & Microservices',
+      pillar: 'Pillar 1: Engineering & Emerging Technologies',
+      issue_date: 'November 05, 2024',
+      grade: 'Distinction (95.0%)',
+      status: 'VALID',
+      badge: 'Certified Cloud Architect'
+    },
+    {
+      code: 'SQA-UX-2024-5519',
+      student_name: 'Sarah Jenkins',
+      program: 'Spatial Design & HMI Human-Computer Interaction',
+      pillar: 'Pillar 3: Creative Design & Media Lab',
+      issue_date: 'December 01, 2024',
+      grade: 'Honors (96.8%)',
+      status: 'VALID',
+      badge: 'Design Systems Lead'
+    },
+    {
+      code: 'SQA-PM-2024-3321',
+      student_name: 'Rohan Mehta',
+      program: 'Strategic Product Leadership & Venture Unit Economics',
+      pillar: 'Pillar 2: Strategic Business Leadership',
+      issue_date: 'January 10, 2025',
+      grade: 'High Distinction (97.0%)',
+      status: 'VALID',
+      badge: 'Product Fellow'
+    }
+  ];
+
+  for (const cert of sqaCertificates) {
+    const existing = await prisma.sqa_certificates.findFirst({ where: { code: cert.code } });
+    if (!existing) {
+      await prisma.sqa_certificates.create({ data: cert });
+    }
+  }
+  console.log('✓ SQA Verified Certificate Ledger seeded (6 credentials)');
+
+  const sqaLeads = [
+    {
+      lead_code: 'LEAD-1042',
+      full_name: 'Maya Patel',
+      email: 'maya.patel@designhub.io',
+      phone: '+91 98111 22334',
+      service_category: 'Pillar 3: Creative Design & Media Lab',
+      sub_stream: 'Spatial Design & HMI',
+      goals: 'AR/VR spatial prototyping and design systems.',
+      status: 'NEW'
+    },
+    {
+      lead_code: 'LEAD-1088',
+      full_name: 'Alexander Wright',
+      email: 'alex.wright@quantum.dev',
+      phone: '+91 98765 43210',
+      service_category: 'Pillar 4: Applied AI & Data Intelligence',
+      sub_stream: 'Autonomous Agent Engineering',
+      goals: 'Transition from senior fullstack into enterprise AI orchestration.',
+      status: 'CONTACTED'
+    },
+    {
+      lead_code: 'LEAD-2015',
+      full_name: 'Priya Sharma',
+      email: 'priya.sharma@techcorp.in',
+      phone: '+91 99887 76655',
+      service_category: 'Pillar 1: Engineering & Emerging Technologies',
+      sub_stream: 'Cloud-Native Full-Stack Engineering',
+      goals: 'Next.js 14 and distributed systems architecture.',
+      status: 'ENROLLED'
+    }
+  ];
+
+  for (const lead of sqaLeads) {
+    const existing = await prisma.sqa_leads.findFirst({ where: { lead_code: lead.lead_code } });
+    if (!existing) {
+      await prisma.sqa_leads.create({ data: lead });
+    }
+  }
+  console.log('✓ SQA Admissions Leads seeded (3 initial CRM records)');
 
   console.log('--- Database Seeding Complete ---');
 }

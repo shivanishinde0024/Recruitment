@@ -7,8 +7,31 @@ const validate = require('../../middleware/validate');
 const asyncHandler = require('../../utils/asyncHandler');
 const { masterCreateSchema, masterUpdateSchema } = require('./masters.schema');
 
-// Any authenticated user can query master lists (for dropdowns and forms)
-router.get('/:type', authenticate, asyncHandler(mastersController.list));
+// Master types permitted for public registration and cascading location forms
+const PUBLIC_MASTER_TYPES = new Set([
+  'industries',
+  'company-types',
+  'countries',
+  'states',
+  'cities'
+]);
+
+const authenticateDropdownRead = (req, res, next) => {
+  if (PUBLIC_MASTER_TYPES.has(req.params.type)) {
+    const token = req.cookies?.access_token || (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.substring(7) : null);
+    if (!token) {
+      return next();
+    }
+    return authenticate(req, res, () => {
+      // For public dropdowns, ignore invalid/expired tokens and proceed unauthenticated
+      next();
+    });
+  }
+  return authenticate(req, res, next);
+};
+
+// Query master lists (public for registration types, authenticated for others)
+router.get('/:type', authenticateDropdownRead, asyncHandler(mastersController.list));
 
 // Admin-only management endpoints
 router.get('/:type/:id', authenticate, requireRole('admin'), asyncHandler(mastersController.getById));

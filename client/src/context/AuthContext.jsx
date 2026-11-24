@@ -11,16 +11,48 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Hydrate cached user from localStorage on client mount to eliminate delay/flicker
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const cachedUser = localStorage.getItem('rp_user');
+        if (cachedUser) {
+          const parsed = JSON.parse(cachedUser);
+          if (parsed && parsed.name && parsed.role) {
+            setUser(parsed);
+          }
+        }
+      } catch {
+        // Ignore JSON parse errors
+      }
+    }
+  }, []);
+
   const fetchCurrentUser = useCallback(async () => {
     try {
       const res = await api.get('/auth/me');
       if (res.data?.success && res.data?.data) {
         setUser(res.data.data);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('rp_user', JSON.stringify(res.data.data));
+        }
       } else {
         setUser(null);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('rp_user');
+        }
       }
     } catch (err) {
-      setUser(null);
+      if (err.response?.status === 401) {
+        setUser(null);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('rp_user');
+          localStorage.removeItem('access_token');
+        }
+        if (typeof document !== 'undefined') {
+          document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -34,16 +66,30 @@ export function AuthProvider({ children }) {
     const res = await api.post('/auth/login', credentials);
     if (res.data?.success) {
       const loggedInUser = res.data.data.user;
+      const token = res.data.data.token;
+
+      // 1. Explicitly store access_token and user info so Next.js Edge Middleware & Client both detect it
+      if (typeof localStorage !== 'undefined') {
+        if (token) localStorage.setItem('access_token', token);
+        if (loggedInUser) localStorage.setItem('rp_user', JSON.stringify(loggedInUser));
+      }
+      if (token && typeof document !== 'undefined') {
+        document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+      }
+
       setUser(loggedInUser);
-      // Route by role
-      if (loggedInUser.role === 'admin') {
-        router.push('/admin/dashboard');
-      } else if (loggedInUser.role === 'staff') {
-        router.push('/staff/dashboard');
-      } else if (loggedInUser.role === 'company') {
-        router.push('/company/dashboard');
+
+      // 2. Check for redirect query parameter (e.g. /login?redirect=%2Fadmin%2Fdashboard)
+      let target = `/${loggedInUser.role}/dashboard`;
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectParam = urlParams.get('redirect');
+        if (redirectParam && redirectParam.startsWith(`/${loggedInUser.role}`)) {
+          target = redirectParam;
+        }
+        window.location.href = target;
       } else {
-        router.push('/');
+        router.push(target);
       }
       return res.data;
     }
@@ -56,8 +102,19 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
+      if (typeof document !== 'undefined') {
+        document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      }
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('rp_user');
+      }
       setUser(null);
-      router.push('/login');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      } else {
+        router.push('/login');
+      }
     }
   };
 

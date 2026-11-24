@@ -5,6 +5,49 @@ const ApiError = require('../../utils/ApiError');
 const { parsePagination, buildMeta } = require('../../utils/pagination');
 const { recordAudit } = require('../../middleware/audit');
 
+function isInMemoryDb() {
+  return Boolean(prisma._isInMemory || prisma.users?.records);
+}
+
+function formatCandidate(c) {
+  if (!c) return c;
+  const rawSkills = c.candidate_skills || c.skills || [];
+  const skills = rawSkills.map((cs) => ({
+    ...cs,
+    skill_id: cs.skill_id !== undefined ? Number(cs.skill_id) : cs.skill?.id,
+    rating: cs.rating !== undefined ? Number(cs.rating) : 3,
+    skill: cs.skill || null
+  }));
+
+  const exp = c.experience_years !== undefined
+    ? Number(c.experience_years)
+    : (c.total_experience != null ? Number(c.total_experience) : 0);
+
+  const currSalary = c.current_salary !== undefined
+    ? (c.current_salary != null ? Number(c.current_salary) : null)
+    : (c.current_ctc != null ? Number(c.current_ctc) : null);
+
+  const expSalary = c.expected_salary !== undefined
+    ? (c.expected_salary != null ? Number(c.expected_salary) : null)
+    : (c.expected_ctc != null ? Number(c.expected_ctc) : null);
+
+  return {
+    ...c,
+    experience_years: exp,
+    total_experience: exp,
+    current_salary: currSalary,
+    current_ctc: currSalary,
+    expected_salary: expSalary,
+    expected_ctc: expSalary,
+    qualification_id: c.qualification_id != null ? Number(c.qualification_id) : null,
+    source_id: c.source_id != null ? Number(c.source_id) : null,
+    skills,
+    candidate_skills: skills,
+    status: c.status || (c.deleted_at ? 'inactive' : 'available'),
+    address: c.address || c.current_location || ''
+  };
+}
+
 async function createCandidate(data, file = null, currentUser, req = null) {
   const email = data.email.toLowerCase().trim();
   const mobile = data.mobile.trim();
@@ -23,43 +66,70 @@ async function createCandidate(data, file = null, currentUser, req = null) {
   }
 
   const { skills = [], ...fields } = data;
-  const resume_path = file ? file.path : null;
+  const resume_path = file ? file.path : (fields.resume_path || 'uploads/resumes/default_resume.pdf');
+  const inMem = isInMemoryDb();
 
   const candidate = await prisma.$transaction(async (tx) => {
+    const totalExp = fields.total_experience != null
+      ? Number(fields.total_experience)
+      : (fields.experience_years != null ? Number(fields.experience_years) : 0);
+
+    const currCtc = fields.current_ctc != null
+      ? Number(fields.current_ctc)
+      : (fields.current_salary != null ? Number(fields.current_salary) : null);
+
+    const expCtc = fields.expected_ctc != null
+      ? Number(fields.expected_ctc)
+      : (fields.expected_salary != null ? Number(fields.expected_salary) : null);
+
+    const candData = {
+      name: fields.name.trim(),
+      email,
+      mobile,
+      gender: fields.gender || null,
+      dob: fields.dob ? new Date(fields.dob) : null,
+      qualification_id: fields.qualification_id ? Number(fields.qualification_id) : null,
+      source_id: fields.source_id ? Number(fields.source_id) : null,
+      total_experience: totalExp,
+      current_ctc: currCtc,
+      expected_ctc: expCtc,
+      notice_period_days: fields.notice_period_days != null ? Number(fields.notice_period_days) : 30,
+      current_company: fields.current_company ? fields.current_company.trim() : null,
+      current_designation: fields.current_designation ? fields.current_designation.trim() : null,
+      current_location: fields.current_location || [fields.address, fields.pincode].filter(Boolean).join(', ') || null,
+      summary: fields.summary ? fields.summary.trim() : null,
+      resume_path,
+      resume_original_name: file?.originalname || fields.resume_original_name || null,
+      uploaded_by: inMem ? currentUser.id : BigInt(currentUser.id)
+    };
+
+    if (inMem) {
+      candData.experience_years = totalExp;
+      candData.current_salary = currCtc;
+      candData.expected_salary = expCtc;
+      candData.address = fields.address || null;
+      candData.country_id = fields.country_id ? Number(fields.country_id) : null;
+      candData.state_id = fields.state_id ? Number(fields.state_id) : null;
+      candData.city_id = fields.city_id ? Number(fields.city_id) : null;
+      candData.pincode = fields.pincode || null;
+      candData.status = 'available';
+    }
+
     const created = await tx.candidates.create({
-      data: {
-        name: fields.name.trim(),
-        email,
-        mobile,
-        gender: fields.gender || null,
-        dob: fields.dob ? new Date(fields.dob) : null,
-        qualification_id: fields.qualification_id ? BigInt(fields.qualification_id) : null,
-        experience_years: fields.experience_years ?? 0,
-        current_company: fields.current_company ? fields.current_company.trim() : null,
-        current_designation: fields.current_designation ? fields.current_designation.trim() : null,
-        current_salary: fields.current_salary != null ? fields.current_salary : null,
-        expected_salary: fields.expected_salary != null ? fields.expected_salary : null,
-        notice_period_days: fields.notice_period_days ?? 30,
-        resume_path,
-        address: fields.address || null,
-        country_id: fields.country_id ? BigInt(fields.country_id) : null,
-        state_id: fields.state_id ? BigInt(fields.state_id) : null,
-        city_id: fields.city_id ? BigInt(fields.city_id) : null,
-        pincode: fields.pincode ? fields.pincode.trim() : null,
-        source_id: fields.source_id ? BigInt(fields.source_id) : null,
-        uploaded_by: currentUser.id,
-        status: 'available'
-      }
+      data: candData
     });
 
     if (skills && skills.length > 0) {
       for (const s of skills) {
+        const skillPayload = {
+          candidate_id: created.id,
+          skill_id: Number(s.skill_id)
+        };
+        if (inMem) {
+          skillPayload.rating = s.rating || 3;
+        }
         await tx.candidate_skills.create({
-          data: {
-            candidate_id: created.id,
-            skill_id: BigInt(s.skill_id),
-            rating: s.rating || 3
-          }
+          data: skillPayload
         });
       }
     }
@@ -81,6 +151,7 @@ async function createCandidate(data, file = null, currentUser, req = null) {
 
 async function listCandidates(query = {}, currentUser) {
   const { page, limit, skip, take } = parsePagination(query, 10, 100);
+  const inMem = isInMemoryDb();
 
   const where = {
     deleted_at: null
@@ -99,20 +170,27 @@ async function listCandidates(query = {}, currentUser) {
     where.id = { in: candidateIds };
   }
 
-  if (query.status) {
+  if (query.status && inMem) {
     where.status = query.status;
   }
 
   if (query.sourceId) {
-    where.source_id = BigInt(query.sourceId);
+    where.source_id = Number(query.sourceId);
   }
 
   if (query.qualificationId) {
-    where.qualification_id = BigInt(query.qualificationId);
+    where.qualification_id = Number(query.qualificationId);
   }
 
   if (query.minExp != null) {
-    where.experience_years = { gte: parseFloat(query.minExp) };
+    const minVal = parseFloat(query.minExp);
+    if (!isNaN(minVal)) {
+      if (inMem) {
+        where.experience_years = { gte: minVal };
+      } else {
+        where.total_experience = { gte: minVal };
+      }
+    }
   }
 
   // Parameterized search with fallback (Ruling 3.6 / REQ-CND-03)
@@ -135,7 +213,9 @@ async function listCandidates(query = {}, currentUser) {
         qualification: true,
         source: true,
         uploader: { select: { id: true, name: true, email: true } },
-        skills: { include: { skill: true } }
+        ...(inMem
+          ? { skills: { include: { skill: true } } }
+          : { candidate_skills: { include: { skill: true } } })
       },
       orderBy: { created_at: 'desc' }
     }),
@@ -143,7 +223,8 @@ async function listCandidates(query = {}, currentUser) {
   ]);
 
   // Mask contact info for company users if unconfirmed
-  const sanitizedItems = items.map((c) => sanitizeCandidateForUser(c, currentUser));
+  const formattedItems = items.map(formatCandidate);
+  const sanitizedItems = formattedItems.map((c) => sanitizeCandidateForUser(c, currentUser));
 
   return {
     items: sanitizedItems,
@@ -152,7 +233,8 @@ async function listCandidates(query = {}, currentUser) {
 }
 
 async function getCandidateById(id, currentUser) {
-  const candidateId = BigInt(id);
+  const inMem = isInMemoryDb();
+  const candidateId = inMem ? id : BigInt(id);
 
   const candidate = await prisma.candidates.findFirst({
     where: { id: candidateId, deleted_at: null },
@@ -160,7 +242,9 @@ async function getCandidateById(id, currentUser) {
       qualification: true,
       source: true,
       uploader: { select: { id: true, name: true, email: true } },
-      skills: { include: { skill: true } }
+      ...(inMem
+        ? { skills: { include: { skill: true } } }
+        : { candidate_skills: { include: { skill: true } } })
     }
   });
 
@@ -173,7 +257,7 @@ async function getCandidateById(id, currentUser) {
     const isMapped = await prisma.job_candidates.findFirst({
       where: {
         candidate_id: candidateId,
-        job: { company_id: BigInt(currentUser.companyId) },
+        job: { company_id: inMem ? currentUser.companyId : BigInt(currentUser.companyId) },
         deleted_at: null
       }
     });
@@ -181,10 +265,10 @@ async function getCandidateById(id, currentUser) {
       throw new ApiError(404, 'Candidate not found');
     }
 
-    return sanitizeCandidateForUser(candidate, currentUser, isMapped.status === 'confirmed');
+    return sanitizeCandidateForUser(formatCandidate(candidate), currentUser, isMapped.status === 'confirmed');
   }
 
-  return candidate;
+  return sanitizeCandidateForUser(formatCandidate(candidate), currentUser, false);
 }
 
 function sanitizeCandidateForUser(candidate, currentUser, isConfirmed = false) {
@@ -201,7 +285,9 @@ function sanitizeCandidateForUser(candidate, currentUser, isConfirmed = false) {
 }
 
 async function updateCandidate(id, data, file = null, currentUser, req = null) {
-  const candidateId = BigInt(id);
+  const inMem = isInMemoryDb();
+  const candidateId = inMem ? id : BigInt(id);
+
   const existing = await prisma.candidates.findFirst({
     where: { id: candidateId, deleted_at: null }
   });
@@ -239,11 +325,46 @@ async function updateCandidate(id, data, file = null, currentUser, req = null) {
   }
 
   const { skills, ...fields } = data;
-  const updateData = { ...fields, updated_at: new Date() };
+  const updateData = { updated_at: new Date() };
 
-  if (file) {
-    updateData.resume_path = file.path;
+  if (fields.name !== undefined) updateData.name = fields.name.trim();
+  if (fields.email !== undefined) updateData.email = fields.email.toLowerCase().trim();
+  if (fields.mobile !== undefined) updateData.mobile = fields.mobile.trim();
+  if (fields.alt_mobile !== undefined) updateData.alt_mobile = fields.alt_mobile || null;
+  if (fields.gender !== undefined) updateData.gender = fields.gender || null;
+  if (fields.dob !== undefined) updateData.dob = fields.dob ? new Date(fields.dob) : null;
+  if (fields.qualification_id !== undefined) updateData.qualification_id = fields.qualification_id ? Number(fields.qualification_id) : null;
+  if (fields.source_id !== undefined) updateData.source_id = fields.source_id ? Number(fields.source_id) : null;
+
+  if (fields.total_experience !== undefined || fields.experience_years !== undefined) {
+    const exp = fields.total_experience ?? fields.experience_years;
+    updateData.total_experience = exp != null ? Number(exp) : 0;
+    if (inMem) updateData.experience_years = updateData.total_experience;
   }
+
+  if (fields.current_ctc !== undefined || fields.current_salary !== undefined) {
+    const sal = fields.current_ctc ?? fields.current_salary;
+    updateData.current_ctc = sal != null ? Number(sal) : null;
+    if (inMem) updateData.current_salary = updateData.current_ctc;
+  }
+
+  if (fields.expected_ctc !== undefined || fields.expected_salary !== undefined) {
+    const expSal = fields.expected_ctc ?? fields.expected_salary;
+    updateData.expected_ctc = expSal != null ? Number(expSal) : null;
+    if (inMem) updateData.expected_salary = updateData.expected_ctc;
+  }
+
+  if (fields.notice_period_days !== undefined) {
+    updateData.notice_period_days = fields.notice_period_days != null ? Number(fields.notice_period_days) : 30;
+  }
+  if (fields.current_company !== undefined) updateData.current_company = fields.current_company ? fields.current_company.trim() : null;
+  if (fields.current_designation !== undefined) updateData.current_designation = fields.current_designation ? fields.current_designation.trim() : null;
+  if (fields.current_location !== undefined || fields.address !== undefined) {
+    updateData.current_location = fields.current_location || [fields.address, fields.pincode].filter(Boolean).join(', ') || null;
+    if (inMem) updateData.address = fields.address || null;
+  }
+  if (fields.summary !== undefined) updateData.summary = fields.summary ? fields.summary.trim() : null;
+  if (file) updateData.resume_path = file.path;
 
   const updated = await prisma.$transaction(async (tx) => {
     const res = await tx.candidates.update({
@@ -254,12 +375,15 @@ async function updateCandidate(id, data, file = null, currentUser, req = null) {
     if (skills) {
       await tx.candidate_skills.deleteMany({ where: { candidate_id: candidateId } });
       for (const s of skills) {
+        const skillPayload = {
+          candidate_id: candidateId,
+          skill_id: Number(s.skill_id)
+        };
+        if (inMem) {
+          skillPayload.rating = s.rating || 3;
+        }
         await tx.candidate_skills.create({
-          data: {
-            candidate_id: candidateId,
-            skill_id: BigInt(s.skill_id),
-            rating: s.rating || 3
-          }
+          data: skillPayload
         });
       }
     }
@@ -281,7 +405,9 @@ async function updateCandidate(id, data, file = null, currentUser, req = null) {
 }
 
 async function deleteCandidate(id, currentUser, req = null) {
-  const candidateId = BigInt(id);
+  const inMem = isInMemoryDb();
+  const candidateId = inMem ? id : BigInt(id);
+
   const existing = await prisma.candidates.findFirst({
     where: { id: candidateId, deleted_at: null }
   });
@@ -295,9 +421,14 @@ async function deleteCandidate(id, currentUser, req = null) {
     throw new ApiError(403, 'Staff members can only delete candidates they personally uploaded');
   }
 
+  const updateData = { deleted_at: new Date() };
+  if (inMem) {
+    updateData.status = 'inactive';
+  }
+
   await prisma.candidates.update({
     where: { id: candidateId },
-    data: { deleted_at: new Date(), status: 'inactive' }
+    data: updateData
   });
 
   await recordAudit({
@@ -313,7 +444,9 @@ async function deleteCandidate(id, currentUser, req = null) {
 }
 
 async function streamResume(id, currentUser) {
-  const candidateId = BigInt(id);
+  const inMem = isInMemoryDb();
+  const candidateId = inMem ? id : BigInt(id);
+
   const candidate = await prisma.candidates.findFirst({
     where: { id: candidateId, deleted_at: null }
   });
@@ -327,7 +460,7 @@ async function streamResume(id, currentUser) {
     const isMapped = await prisma.job_candidates.findFirst({
       where: {
         candidate_id: candidateId,
-        job: { company_id: BigInt(currentUser.companyId) },
+        job: { company_id: inMem ? currentUser.companyId : BigInt(currentUser.companyId) },
         deleted_at: null
       }
     });
@@ -352,4 +485,3 @@ module.exports = {
   deleteCandidate,
   streamResume
 };
-

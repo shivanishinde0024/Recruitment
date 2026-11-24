@@ -155,11 +155,13 @@ class InMemoryTable {
       });
     }
 
-    if (include.skills && this.name === 'candidates') {
-      enriched.skills = await this.client.candidate_skills.findMany({
+    if ((include.skills || include.candidate_skills) && this.name === 'candidates') {
+      const skillsData = await this.client.candidate_skills.findMany({
         where: { candidate_id: record.id },
-        include: include.skills.include
+        include: (include.skills?.include || include.candidate_skills?.include)
       });
+      enriched.skills = skillsData;
+      enriched.candidate_skills = skillsData;
     }
 
     if (include.assignedStaff && record.assigned_to) {
@@ -357,7 +359,8 @@ class InMemoryPrismaClient {
       'notifications', 'audit_logs', 'email_templates', 'settings',
       'industries', 'company_types', 'job_categories', 'job_titles', 'skills',
       'qualifications', 'employment_types', 'experience_levels', 'candidate_sources',
-      'countries', 'states', 'cities'
+      'countries', 'states', 'cities',
+      'sqa_leads', 'sqa_applications', 'sqa_certificates'
     ];
 
     for (const name of this.tableNames) {

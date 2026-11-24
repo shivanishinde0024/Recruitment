@@ -120,22 +120,31 @@ async function processBulkCandidateUpload(excelBuffer, zipBuffer = null, current
 
       try {
         await prisma.$transaction(async (tx) => {
+          const inMem = Boolean(prisma._isInMemory || prisma.users?.records);
+          const candPayload = {
+            name: item.name,
+            email: item.email,
+            mobile: item.mobile,
+            gender: item.gender || null,
+            total_experience: item.experience_years ? Number(item.experience_years) : 0,
+            current_company: item.current_company || null,
+            current_designation: item.current_designation || null,
+            current_ctc: item.current_salary != null ? Number(item.current_salary) : null,
+            expected_ctc: item.expected_salary != null ? Number(item.expected_salary) : null,
+            notice_period_days: item.notice_period_days || 30,
+            resume_path: resume_path || 'uploads/resumes/default_resume.pdf',
+            uploaded_by: inMem ? currentUser.id : BigInt(currentUser.id)
+          };
+
+          if (inMem) {
+            candPayload.experience_years = item.experience_years || 0;
+            candPayload.current_salary = item.current_salary;
+            candPayload.expected_salary = item.expected_salary;
+            candPayload.status = 'available';
+          }
+
           const candidate = await tx.candidates.create({
-            data: {
-              name: item.name,
-              email: item.email,
-              mobile: item.mobile,
-              gender: item.gender,
-              experience_years: item.experience_years || 0,
-              current_company: item.current_company,
-              current_designation: item.current_designation,
-              current_salary: item.current_salary,
-              expected_salary: item.expected_salary,
-              notice_period_days: item.notice_period_days || 30,
-              resume_path,
-              uploaded_by: currentUser.id,
-              status: 'available'
-            }
+            data: candPayload
           });
 
           // Parse comma-separated skills if present
@@ -146,14 +155,17 @@ async function processBulkCandidateUpload(excelBuffer, zipBuffer = null, current
                 where: { name: sName }
               });
               if (!skill) {
-                skill = await tx.skills.create({ data: { name: sName, status: 'active' } });
+                skill = await tx.skills.create({ data: { name: sName, ...(inMem ? { status: 'active' } : { is_active: true }) } });
+              }
+              const skillPayload = {
+                candidate_id: candidate.id,
+                skill_id: Number(skill.id)
+              };
+              if (inMem) {
+                skillPayload.rating = 3;
               }
               await tx.candidate_skills.create({
-                data: {
-                  candidate_id: candidate.id,
-                  skill_id: skill.id,
-                  rating: 3
-                }
+                data: skillPayload
               });
             }
           }

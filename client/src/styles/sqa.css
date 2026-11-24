@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Success Quest Academy (SQA) Specific Styles */
+
+.sqa-landing-root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Scoped base resets with :where() zero-specificity to prevent Bootstrap 5 interference without overriding Tailwind utilities */
+@layer base {
+  :where(.sqa-landing-root) a {
+    text-decoration: none;
+  }
+  :where(.sqa-landing-root) p {
+    margin-bottom: 0;
+  }
+  :where(.sqa-landing-root) h1,
+  :where(.sqa-landing-root) h2,
+  :where(.sqa-landing-root) h3,
+  :where(.sqa-landing-root) h4,
+  :where(.sqa-landing-root) h5,
+  :where(.sqa-landing-root) h6 {
+    margin-bottom: 0;
+    line-height: inherit;
+    font-weight: inherit;
+  }
+  :where(.sqa-landing-root) button {
+    cursor: pointer;
+  }
+  :where(.sqa-landing-root) button:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  :where(.sqa-landing-root) table {
+    margin-bottom: 0;
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #070c1a;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #1e3268;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
+}
+
+.glass-panel {
+  background: rgba(11, 19, 41, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.sqa-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sqa-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -10px rgba(13, 148, 136, 0.2);
+}
+
+.sqa-focus:focus-visible {
+  outline: 2px solid #0d9488 !important;
+  outline-offset: 2px !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

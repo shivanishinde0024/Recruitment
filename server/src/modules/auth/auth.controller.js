@@ -4,12 +4,13 @@ const { ok } = require('../../utils/response');
 const isProd = process.env.NODE_ENV === 'production';
 
 function setAuthCookies(res, accessToken, refreshToken) {
-  // 15-minute access token cookie
+  // Access token cookie: 7-day browser persistence matching refresh session to allow Edge Middleware routing,
+  // while the JWT payload itself retains short-lived security expiry (15m) enforced on API endpoints.
   res.cookie('access_token', accessToken, {
     httpOnly: true,
     secure: isProd,
     sameSite: 'lax',
-    maxAge: 15 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/'
   });
 

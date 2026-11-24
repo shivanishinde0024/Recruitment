@@ -3,19 +3,43 @@ const ApiError = require('../../utils/ApiError');
 const { generateSafeCsv, sanitizeFormulaCell } = require('../../utils/csvExport');
 const ExcelJS = require('exceljs');
 
+function resolveJobTitle(j) {
+  if (j.custom_title) return j.custom_title;
+  if (typeof j.title === 'string') return j.title;
+  if (j.title?.name) return j.title.name;
+  return 'Untitled';
+}
+
+function resolveCandidateName(c) {
+  if (!c) return 'Unknown';
+  if (c.name) return c.name;
+  const fullName = `${c.first_name || ''} ${c.last_name || ''}`.trim();
+  return fullName || 'Unknown';
+}
+
+function resolveIndustry(ind) {
+  if (typeof ind === 'string') return ind;
+  if (ind?.name) return ind.name;
+  return 'General';
+}
+
 /**
  * Admin Company-Wise Dashboard (Master §9.1 / REQ-DSH-01)
  * Uses decoupled queries to guarantee high performance and avoid huge multi-table Cartesian joins.
  */
 async function getAdminCompanyWise() {
-  // Query 1: Fetch all approved companies
+  // Query 1: Fetch all approved / non-deleted companies
   const companies = await prisma.companies.findMany({
     where: { deleted_at: null },
     select: {
       id: true,
       company_name: true,
-      industry: true,
-      verification_status: true,
+      industry: {
+        select: {
+          name: true
+        }
+      },
+      status: true,
       created_at: true
     }
   });
@@ -26,18 +50,18 @@ async function getAdminCompanyWise() {
     select: {
       id: true,
       company_id: true,
+      custom_title: true,
       title: true,
       job_code: true,
       status: true,
       positions_required: true,
       last_date: true,
-      assigned_to: true
+      assigned_staff_id: true
     }
   });
 
-  // Query 3: Fetch active candidate mappings
+  // Query 3: Fetch active candidate mappings (job_candidates has no deleted_at)
   const mappings = await prisma.job_candidates.findMany({
-    where: { deleted_at: null },
     select: {
       id: true,
       job_id: true,
@@ -101,8 +125,8 @@ async function getAdminCompanyWise() {
     return {
       company_id: cId,
       company_name: c.company_name,
-      industry: c.industry || 'General',
-      verification_status: c.verification_status,
+      industry: resolveIndustry(c.industry),
+      verification_status: c.status || c.verification_status || 'pending',
       jobs_count: jobsCount,
       open_jobs_count: openJobsCount,
       positions_total: positionsTotal,
@@ -132,7 +156,7 @@ async function getAdminCompanyWise() {
       return {
         id: String(j.id),
         job_code: j.job_code,
-        title: j.title,
+        title: resolveJobTitle(j),
         company_name: comp?.company_name || 'Unknown',
         positions_required: j.positions_required,
         confirmed_count: confirmed,
@@ -163,7 +187,10 @@ async function getCompanyDrillDown(companyId) {
   const cId = BigInt(companyId);
 
   const company = await prisma.companies.findFirst({
-    where: { id: cId, deleted_at: null }
+    where: { id: cId, deleted_at: null },
+    include: {
+      industry: true
+    }
   });
 
   if (!company) {
@@ -171,14 +198,16 @@ async function getCompanyDrillDown(companyId) {
   }
 
   const jobs = await prisma.jobs.findMany({
-    where: { company_id: cId, deleted_at: null }
+    where: { company_id: cId, deleted_at: null },
+    include: {
+      title: true
+    }
   });
 
   const jobIds = jobs.map(j => j.id);
   const mappings = await prisma.job_candidates.findMany({
     where: {
-      job_id: { in: jobIds },
-      deleted_at: null
+      job_id: { in: jobIds }
     },
     include: {
       candidate: true
@@ -206,7 +235,7 @@ async function getCompanyDrillDown(companyId) {
     return {
       id: String(j.id),
       job_code: j.job_code,
-      title: j.title,
+      title: resolveJobTitle(j),
       status: j.status,
       positions_required: j.positions_required,
       submitted_count: submittedCount,
@@ -214,7 +243,7 @@ async function getCompanyDrillDown(companyId) {
       last_date: j.last_date,
       candidates: jMappings.map(m => ({
         mapping_id: String(m.id),
-        candidate_name: m.candidate ? `${m.candidate.first_name} ${m.candidate.last_name}` : 'Unknown',
+        candidate_name: resolveCandidateName(m.candidate),
         match_score: m.match_score,
         status: m.status,
         mapped_at: m.created_at
@@ -230,10 +259,10 @@ async function getCompanyDrillDown(companyId) {
     company: {
       id: String(company.id),
       company_name: company.company_name,
-      email: company.email,
-      phone: company.phone,
-      industry: company.industry,
-      verification_status: company.verification_status
+      email: company.contact_email || company.email,
+      phone: company.contact_mobile || company.phone,
+      industry: resolveIndustry(company.industry),
+      verification_status: company.status || company.verification_status || 'pending'
     },
     metrics: {
       total_jobs: jobs.length,
@@ -251,11 +280,18 @@ async function getCompanyDrillDown(companyId) {
 async function getStaffDashboard(staffUserId) {
   const uId = BigInt(staffUserId);
 
-  // Assigned jobs
+  // Assigned jobs (supports assigned_staff_id and assigned_to in mock)
   const assignedJobs = await prisma.jobs.findMany({
-    where: { assigned_to: uId, deleted_at: null },
+    where: {
+      OR: [
+        { assigned_staff_id: uId },
+        { assigned_to: uId }
+      ],
+      deleted_at: null
+    },
     include: {
-      company: true
+      company: true,
+      title: true
     }
   });
 
@@ -264,14 +300,19 @@ async function getStaffDashboard(staffUserId) {
   // Mappings on assigned jobs
   const mappings = await prisma.job_candidates.findMany({
     where: {
-      job_id: { in: assignedJobIds },
-      deleted_at: null
+      job_id: { in: assignedJobIds }
     }
   });
 
-  // Candidates uploaded by this staff member
+  // Candidates uploaded by this staff member (supports uploaded_by and created_by)
   const candidatesUploaded = await prisma.candidates.count({
-    where: { created_by: uId, deleted_at: null }
+    where: {
+      OR: [
+        { uploaded_by: uId },
+        { created_by: uId }
+      ],
+      deleted_at: null
+    }
   });
 
   const activeJobs = assignedJobs.filter(j => ['open', 'in_progress'].includes(j.status));
@@ -295,7 +336,7 @@ async function getStaffDashboard(staffUserId) {
     .map(j => ({
       id: String(j.id),
       job_code: j.job_code,
-      title: j.title,
+      title: resolveJobTitle(j),
       company_name: j.company?.company_name || 'Unknown',
       positions_required: j.positions_required,
       last_date: j.last_date,
@@ -315,7 +356,7 @@ async function getStaffDashboard(staffUserId) {
     assigned_jobs: activeJobs.map(j => ({
       id: String(j.id),
       job_code: j.job_code,
-      title: j.title,
+      title: resolveJobTitle(j),
       company_name: j.company?.company_name || 'Unknown',
       positions_required: j.positions_required,
       status: j.status,
@@ -332,15 +373,17 @@ async function getCompanyDashboard(companyId) {
   const cId = BigInt(companyId);
 
   const jobs = await prisma.jobs.findMany({
-    where: { company_id: cId, deleted_at: null }
+    where: { company_id: cId, deleted_at: null },
+    include: {
+      title: true
+    }
   });
 
   const jobIds = jobs.map(j => j.id);
 
   const mappings = await prisma.job_candidates.findMany({
     where: {
-      job_id: { in: jobIds },
-      deleted_at: null
+      job_id: { in: jobIds }
     },
     include: {
       candidate: true
@@ -391,7 +434,7 @@ async function getCompanyDashboard(companyId) {
         return {
           id: String(j.id),
           job_code: j.job_code,
-          title: j.title,
+          title: resolveJobTitle(j),
           status: j.status,
           positions_required: j.positions_required,
           confirmed_count: conf,
@@ -425,10 +468,13 @@ async function exportReport({ type = 'company-wise', format = 'csv' }) {
     rows = data.companies;
   } else if (type === 'candidate-pipeline') {
     const mappings = await prisma.job_candidates.findMany({
-      where: { deleted_at: null },
       include: {
         candidate: true,
-        job: true
+        job: {
+          include: {
+            title: true
+          }
+        }
       }
     });
 
@@ -444,11 +490,11 @@ async function exportReport({ type = 'company-wise', format = 'csv' }) {
     ];
 
     rows = mappings.map(m => ({
-      candidate_name: m.candidate ? `${m.candidate.first_name} ${m.candidate.last_name}` : 'Unknown',
+      candidate_name: resolveCandidateName(m.candidate),
       candidate_email: m.candidate?.email || '',
       candidate_mobile: m.candidate?.mobile || '',
       job_code: m.job?.job_code || '',
-      job_title: m.job?.title || '',
+      job_title: resolveJobTitle(m.job || {}),
       match_score: m.match_score || 0,
       status: m.status,
       mapped_at: m.created_at ? new Date(m.created_at).toISOString().split('T')[0] : ''
@@ -471,7 +517,9 @@ async function exportReport({ type = 'company-wise', format = 'csv' }) {
     const jobs = await prisma.jobs.findMany({
       where: { deleted_at: null },
       include: {
-        company: true
+        company: true,
+        title: true,
+        city: true
       }
     });
 
@@ -487,12 +535,12 @@ async function exportReport({ type = 'company-wise', format = 'csv' }) {
 
     rows = jobs.map(j => ({
       job_code: j.job_code,
-      title: j.title,
+      title: resolveJobTitle(j),
       company_name: j.company?.company_name || '',
       positions_required: j.positions_required,
       status: j.status,
       last_date: j.last_date ? new Date(j.last_date).toISOString().split('T')[0] : '',
-      location: j.location || ''
+      location: j.city?.name || j.work_mode || 'Onsite'
     }));
   } else {
     throw new ApiError(400, `Unsupported report type: ${type}`);
@@ -547,15 +595,32 @@ async function getStaffPerformance() {
 
   for (const s of staffUsers) {
     const assignedJobs = await prisma.jobs.count({
-      where: { assigned_staff_id: s.id, deleted_at: null }
+      where: {
+        OR: [
+          { assigned_staff_id: s.id },
+          { assigned_to: s.id }
+        ],
+        deleted_at: null
+      }
     });
 
     const candidatesUploaded = await prisma.candidates.count({
-      where: { uploaded_by: s.id, deleted_at: null }
+      where: {
+        OR: [
+          { uploaded_by: s.id },
+          { created_by: s.id }
+        ],
+        deleted_at: null
+      }
     });
 
     const mappings = await prisma.job_candidates.findMany({
-      where: { created_by: s.id, deleted_at: null }
+      where: {
+        OR: [
+          { submitted_by: s.id },
+          { created_by: s.id }
+        ]
+      }
     });
 
     const confirmedCount = mappings.filter(m => m.status === 'confirmed').length;
@@ -587,4 +652,3 @@ module.exports = {
   getStaffPerformance,
   exportReport
 };
-

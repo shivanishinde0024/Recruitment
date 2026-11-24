@@ -8,11 +8,13 @@ import { useAuth } from '../../context/AuthContext';
 export default function Sidebar({ onNavigate, onClose, isDrawer = false }) {
   const pathname = usePathname();
   const { user } = useAuth();
-  const role = user?.role || 'admin';
+  const routeRole = pathname?.startsWith('/staff') ? 'staff' : (pathname?.startsWith('/company') ? 'company' : 'admin');
+  const role = user?.role || routeRole;
 
   const navItems = {
     admin: [
       { label: 'Dashboard', href: '/admin/dashboard', icon: '📊' },
+      { label: 'Inquiries & Leads', href: '/admin/inquiries', icon: '📥' },
       { label: 'Companies', href: '/admin/companies', icon: '🏢' },
       { label: 'Job Orders', href: '/admin/jobs', icon: '📋' },
       { label: 'Candidates', href: '/admin/candidates', icon: '👥' },
@@ -45,10 +47,17 @@ export default function Sidebar({ onNavigate, onClose, isDrawer = false }) {
   return (
     <aside className={`rp-sidebar ${isDrawer ? 'rp-sidebar-in-drawer' : ''}`}>
       <div className="rp-sidebar-header d-flex align-items-center justify-content-between">
-        <div className="d-flex align-items-center gap-2">
+        <Link
+          href="/"
+          className="d-flex align-items-center gap-2 text-decoration-none text-white rp-brand-link"
+          title="Return to SQA Landing Page"
+          onClick={() => {
+            if (onNavigate) onNavigate();
+          }}
+        >
           <span style={{ fontSize: '1.25rem' }}>🎯</span>
           <span>Recruitment Portal</span>
-        </div>
+        </Link>
         {onClose && (
           <button
             type="button"
@@ -78,6 +87,18 @@ export default function Sidebar({ onNavigate, onClose, isDrawer = false }) {
             </Link>
           );
         })}
+
+        <div className="border-top border-secondary border-opacity-25 my-2"></div>
+        <Link
+          href="/"
+          className="rp-nav-item text-info text-decoration-none"
+          onClick={() => {
+            if (onNavigate) onNavigate();
+          }}
+        >
+          <span>🌐</span>
+          <span>SQA Academy Page</span>
+        </Link>
       </nav>
 
       <div className="p-3 border-top border-secondary border-opacity-25 small text-secondary">

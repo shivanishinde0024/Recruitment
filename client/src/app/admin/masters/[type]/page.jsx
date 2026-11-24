@@ -28,7 +28,7 @@ const MASTER_TYPES = [
 export default function MasterEntityPage() {
   const params = useParams();
   const router = useRouter();
-  const currentType = params.type || 'skills';
+  const currentType = params?.type || 'skills';
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);

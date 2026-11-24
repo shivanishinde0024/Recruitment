@@ -1,6 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/theme.css';
+import '../styles/sqa.css';
 
 import { AuthProvider } from '../context/AuthContext';
 import { ToastContainer } from 'react-toastify';

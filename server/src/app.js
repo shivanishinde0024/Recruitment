@@ -96,6 +96,11 @@ if (NODE_ENV !== 'production') {
   });
 }
 
+// Direct aliases for SQA landing page actions
+const sqaRoutes = require('./modules/sqa/sqa.routes');
+app.use('/api/leads', sqaRoutes);
+app.use('/api/applications', sqaRoutes);
+
 // Mount API v1 Routes
 app.use('/api/v1', routes);
 

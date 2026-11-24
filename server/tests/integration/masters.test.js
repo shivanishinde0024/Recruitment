@@ -53,9 +53,23 @@ describe('Integration: Masters Module (Phase 2 / REQ-MST-01, REQ-MST-02, REQ-MST
   });
 
   describe('GET /api/v1/masters/:type (List & Dropdowns)', () => {
-    it('should reject unauthenticated request with 401', async () => {
+    it('should reject unauthenticated request for internal master (e.g. skills) with 401', async () => {
       const res = await request(app).get('/api/v1/masters/skills');
       expect(res.status).toBe(401);
+    });
+
+    it('should allow unauthenticated access for registration dropdown masters (industries, company-types, countries)', async () => {
+      const indRes = await request(app).get('/api/v1/masters/industries?limit=10');
+      expect(indRes.status).toBe(200);
+      expect(indRes.body.success).toBe(true);
+
+      const typeRes = await request(app).get('/api/v1/masters/company-types?limit=10');
+      expect(typeRes.status).toBe(200);
+      expect(typeRes.body.success).toBe(true);
+
+      const countryRes = await request(app).get('/api/v1/masters/countries?limit=10');
+      expect(countryRes.status).toBe(200);
+      expect(countryRes.body.success).toBe(true);
     });
 
     it('should allow any authenticated role (admin, staff, company) to read master lists', async () => {
