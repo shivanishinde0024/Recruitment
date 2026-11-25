@@ -110,42 +110,82 @@ class SqaService {
     const skip = (page - 1) * limit;
 
     const where = {};
-    if (query.category && query.category !== 'all') {
-      where.service_category = query.category;
-    }
-    if (query.pillar && query.pillar !== 'all') {
-      where.service_category = query.pillar;
-    }
-    if (query.status && query.status !== 'all') {
-      where.status = query.status;
+    const conditions = [];
+
+    if (query.category && query.category.toLowerCase() !== 'all') {
+      const cat = query.category.trim();
+      const lower = cat.toLowerCase();
+
+      // Build flexible search tokens matching category or pillar variants
+      const tokens = [cat];
+      if (lower.includes('roadmap')) {
+        tokens.push('Roadmap', 'Career');
+      } else if (lower.includes('design') || lower.includes('media')) {
+        tokens.push('Design', 'Media', 'Creative');
+      } else if (lower.includes('certif') || lower.includes('skill')) {
+        tokens.push('Certification', 'Skill', 'Certifications');
+      } else if (lower.includes('engineer') || lower.includes('tech')) {
+        tokens.push('Engineering', 'Emerging', 'Technologies', 'Tech');
+      } else if (lower.includes('ai') || lower.includes('data') || lower.includes('intelligence')) {
+        tokens.push('AI', 'Data', 'Intelligence');
+      } else if (lower.includes('placement') || lower.includes('internship')) {
+        tokens.push('Placement', 'Internship');
+      } else if (lower.includes('start-up') || lower.includes('startup') || lower.includes('research')) {
+        tokens.push('Start-up', 'Startup', 'Research');
+      } else if (lower.includes('soft') || lower.includes('personality')) {
+        tokens.push('Soft', 'Personality');
+      }
+
+      conditions.push({
+        OR: tokens.flatMap((t) => [
+          { service_category: { contains: t } },
+          { sub_stream: { contains: t } }
+        ])
+      });
     }
 
-    const allLeads = await prisma.sqa_leads.findMany({
+    if (query.pillar && query.pillar.toLowerCase() !== 'all') {
+      conditions.push({ service_category: { contains: query.pillar.trim() } });
+    }
+
+    if (query.status && query.status.toLowerCase() !== 'all') {
+      conditions.push({ status: query.status.toUpperCase() });
+    }
+
+    if (conditions.length === 1) {
+      Object.assign(where, conditions[0]);
+    } else if (conditions.length > 1) {
+      where.AND = conditions;
+    }
+
+    // Global stats across all strategic pillars
+    const allGlobalLeads = await prisma.sqa_leads.findMany();
+    const totalAll = allGlobalLeads.length;
+    const newCount = allGlobalLeads.filter(l => l.status === 'NEW').length;
+    const contactedCount = allGlobalLeads.filter(l => l.status === 'CONTACTED').length;
+    const enrolledCount = allGlobalLeads.filter(l => l.status === 'ENROLLED').length;
+    const conversionRate = totalAll > 0 ? ((enrolledCount / totalAll) * 100).toFixed(1) : '0.0';
+
+    const leads = await prisma.sqa_leads.findMany({
       where,
       orderBy: { id: 'desc' }
     });
 
-    let filtered = allLeads;
+    let filtered = leads;
     if (query.search && query.search.trim()) {
       const q = query.search.trim().toLowerCase();
-      filtered = allLeads.filter(l =>
+      filtered = leads.filter(l =>
         (l.full_name && l.full_name.toLowerCase().includes(q)) ||
         (l.email && l.email.toLowerCase().includes(q)) ||
         (l.phone && l.phone.toLowerCase().includes(q)) ||
         (l.sub_stream && l.sub_stream.toLowerCase().includes(q)) ||
+        (l.service_category && l.service_category.toLowerCase().includes(q)) ||
         (l.lead_code && l.lead_code.toLowerCase().includes(q))
       );
     }
 
     const total = filtered.length;
     const paginated = filtered.slice(skip, skip + limit);
-
-    // Compute aggregated CRM metrics
-    const totalAll = allLeads.length;
-    const newCount = allLeads.filter(l => l.status === 'NEW').length;
-    const contactedCount = allLeads.filter(l => l.status === 'CONTACTED').length;
-    const enrolledCount = allLeads.filter(l => l.status === 'ENROLLED').length;
-    const conversionRate = totalAll > 0 ? ((enrolledCount / totalAll) * 100).toFixed(1) : '0.0';
 
     const items = paginated.map(l => ({
       id: l.lead_code || `LEAD-${l.id}`,

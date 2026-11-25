@@ -103,7 +103,14 @@ export default function AdminInquiriesPage() {
         badgeClass: 'badge bg-success-subtle text-success border border-success-subtle'
       };
     }
-    if (cat.includes('certification') || cat.includes('ai') || cat.includes('analytic')) {
+    if (cat.includes('design') || cat.includes('media') || cat.includes('spatial')) {
+      return {
+        label: 'Creative Design & Media',
+        icon: '🎨',
+        badgeClass: 'badge bg-secondary-subtle text-dark border border-secondary-subtle'
+      };
+    }
+    if (cat.includes('certification') || cat.includes('ai') || cat.includes('analytic') || cat.includes('engineering') || cat.includes('emerging') || cat.includes('tech')) {
       return {
         label: 'Skill Certification',
         icon: '🎓',
@@ -250,6 +257,9 @@ export default function AdminInquiriesPage() {
               <option value="ALL">All Pillars / Categories</option>
               <option value="Career Roadmap">🧭 Career Roadmap</option>
               <option value="Professional Skill Certifications">🎓 Skill Certifications</option>
+              <option value="Engineering & Emerging Technologies">⚡ Engineering &amp; Tech</option>
+              <option value="Creative Design & Media Lab">🎨 Creative Design &amp; Media</option>
+              <option value="Applied AI & Data Intelligence">🤖 Applied AI &amp; Data</option>
               <option value="Corporate Internship & placement support">💼 Placement Support</option>
               <option value="Start-up & Market Research">🚀 Start-up &amp; Research</option>
               <option value="Personality Development & Soft skills">🗣️ Soft Skills</option>
