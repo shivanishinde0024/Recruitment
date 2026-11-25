@@ -264,13 +264,13 @@ export default function AdminInquiriesPage() {
           <table className="table table-hover align-middle mb-0">
             <thead className="table-light text-muted extra-small text-uppercase">
               <tr>
-                <th>Inquiry ID</th>
-                <th>Candidate / Student</th>
-                <th>Request Type</th>
-                <th>Focus Track / Milestone</th>
-                <th>Date Received</th>
-                <th>Status</th>
-                <th className="text-end">Actions</th>
+                <th style={{ width: '100px', whiteSpace: 'nowrap' }}>Inquiry ID</th>
+                <th style={{ minWidth: '220px' }}>Candidate / Student</th>
+                <th style={{ minWidth: '150px' }}>Request Type</th>
+                <th style={{ minWidth: '170px' }}>Focus Track / Milestone</th>
+                <th style={{ minWidth: '150px' }}>Date Received</th>
+                <th style={{ minWidth: '95px' }}>Status</th>
+                <th className="text-end" style={{ minWidth: '170px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -299,13 +299,31 @@ export default function AdminInquiriesPage() {
                           {item.id}
                         </span>
                       </td>
-                      <td>
-                        <div className="fw-bold text-dark small">{item.fullName}</div>
-                        <div className="extra-small text-muted">
-                          <a href={`mailto:${item.email}`} className="text-decoration-none text-muted me-2">
-                            ✉ {item.email}
-                          </a>
-                          <span>📞 {item.phone}</span>
+                      <td style={{ minWidth: '220px' }}>
+                        <div className="fw-bold text-dark small mb-1">{item.fullName}</div>
+                        <div className="d-flex flex-column gap-1 extra-small">
+                          {item.email && (
+                            <a
+                              href={`mailto:${item.email}`}
+                              className="text-decoration-none text-muted d-inline-flex align-items-center gap-1.5"
+                              title={item.email}
+                              style={{ maxWidth: '100%' }}
+                            >
+                              <span className="flex-shrink-0 text-primary" style={{ fontSize: '11px', lineHeight: 1 }}>✉</span>
+                              <span className="text-truncate" style={{ maxWidth: '210px' }}>{item.email}</span>
+                            </a>
+                          )}
+                          {item.phone && (
+                            <a
+                              href={`tel:${item.phone}`}
+                              className="text-decoration-none text-muted d-inline-flex align-items-center gap-1.5"
+                              title={item.phone}
+                              style={{ whiteSpace: 'nowrap' }}
+                            >
+                              <span className="flex-shrink-0 text-success" style={{ fontSize: '11px', lineHeight: 1 }}>📞</span>
+                              <span>{item.phone}</span>
+                            </a>
+                          )}
                         </div>
                       </td>
                       <td>
@@ -402,15 +420,15 @@ export default function AdminInquiriesPage() {
 
                 <div className="border rounded p-3 bg-light mb-3">
                   <div className="row g-2 extra-small">
-                    <div className="col-6">
-                      <span className="text-muted d-block">Email Address:</span>
-                      <a href={`mailto:${selectedLead.email}`} className="fw-semibold text-primary">
+                    <div className="col-12 col-sm-6">
+                      <span className="text-muted d-block mb-1">Email Address:</span>
+                      <a href={`mailto:${selectedLead.email}`} className="fw-semibold text-primary text-break" style={{ wordBreak: 'break-all' }}>
                         {selectedLead.email}
                       </a>
                     </div>
-                    <div className="col-6">
-                      <span className="text-muted d-block">Phone Number:</span>
-                      <a href={`tel:${selectedLead.phone}`} className="fw-semibold text-dark">
+                    <div className="col-12 col-sm-6">
+                      <span className="text-muted d-block mb-1">Phone Number:</span>
+                      <a href={`tel:${selectedLead.phone}`} className="fw-semibold text-dark text-break">
                         {selectedLead.phone}
                       </a>
                     </div>
