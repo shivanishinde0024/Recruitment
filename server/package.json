@@ -7,6 +7,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed": "node prisma/seed.js",
+    "check-db": "node test-db-connection.js",
     "test": "jest --watchman=false --runInBand --detectOpenHandles --forceExit",
     "lint": "eslint src/ --ext .js"
   },
