@@ -5,6 +5,41 @@ const { recordAudit } = require('../../middleware/audit');
 const { notify } = require('../../services/notify.service');
 const { generateJobCode } = require('./jobCode.service');
 
+function formatJobRecord(job, counts = {}) {
+  const titleStr = job.custom_title || (typeof job.title === 'string' ? job.title : job.title?.name) || 'Untitled Job';
+  const categoryObj = job.category || job.job_category || null;
+  const staffObj = job.assigned_staff || job.assigned_user || null;
+  const rawSkills = job.job_skills || job.skills || [];
+  const skills = rawSkills.map((s, idx) => ({
+    id: s.id || (job.id ? `${job.id}_${s.skill_id || idx}` : idx),
+    job_id: job.id,
+    skill_id: s.skill_id,
+    is_mandatory: Boolean(s.is_mandatory),
+    skill: s.skill || null
+  }));
+
+  return {
+    ...job,
+    title: titleStr,
+    custom_title: titleStr,
+    job_category: categoryObj,
+    category: categoryObj,
+    category_id: job.category_id || job.job_category_id || null,
+    job_category_id: job.category_id || job.job_category_id || null,
+    assigned_user: staffObj,
+    assigned_staff: staffObj,
+    assigned_to: job.assigned_staff_id || job.assigned_to || (staffObj ? staffObj.id : null),
+    assigned_staff_id: job.assigned_staff_id || job.assigned_to || (staffObj ? staffObj.id : null),
+    job_skills: skills,
+    skills,
+    experience_min: job.exp_min != null ? Number(job.exp_min) : (job.experience_min ?? 0),
+    experience_max: job.exp_max != null ? Number(job.exp_max) : (job.experience_max ?? 0),
+    exp_min: job.exp_min != null ? Number(job.exp_min) : (job.experience_min ?? 0),
+    exp_max: job.exp_max != null ? Number(job.exp_max) : (job.experience_max ?? 0),
+    ...counts
+  };
+}
+
 async function createJob(data, currentUser, req = null) {
   let targetCompanyId;
 
@@ -37,31 +72,45 @@ async function createJob(data, currentUser, req = null) {
   const jobCode = await generateJobCode();
 
   const { skills = [], ...jobPayload } = data;
+  const isRealPrisma = Boolean(prisma.$queryRaw);
 
   const job = await prisma.$transaction(async (tx) => {
+    const jobData = {
+      company_id: targetCompanyId,
+      job_code: jobCode,
+      custom_title: jobPayload.title ? jobPayload.title.trim() : null,
+      created_by: currentUser.id ? BigInt(currentUser.id) : 1n,
+      employment_type_id: jobPayload.employment_type_id ? BigInt(jobPayload.employment_type_id) : null,
+      qualification_id: jobPayload.qualification_id ? BigInt(jobPayload.qualification_id) : null,
+      exp_min: jobPayload.experience_min ?? 0,
+      exp_max: jobPayload.experience_max ?? 0,
+      salary_min: jobPayload.salary_min != null ? jobPayload.salary_min : null,
+      salary_max: jobPayload.salary_max != null ? jobPayload.salary_max : null,
+      salary_negotiable: Boolean(jobPayload.salary_negotiable),
+      positions_required: parseInt(jobPayload.positions_required, 10) || 1,
+      last_date: jobPayload.last_date ? new Date(jobPayload.last_date) : null,
+      country_id: jobPayload.country_id ? BigInt(jobPayload.country_id) : null,
+      state_id: jobPayload.state_id ? BigInt(jobPayload.state_id) : null,
+      city_id: jobPayload.city_id ? BigInt(jobPayload.city_id) : null,
+      description: jobPayload.description || null,
+      responsibilities: jobPayload.responsibilities || null,
+      benefits: jobPayload.benefits || null,
+      status: 'open'
+    };
+
+    if (jobPayload.category_id || jobPayload.job_category_id) {
+      jobData.category_id = parseInt(jobPayload.category_id || jobPayload.job_category_id, 10);
+    }
+
+    if (!isRealPrisma) {
+      jobData.title = jobPayload.title ? jobPayload.title.trim() : null;
+      jobData.job_category_id = jobPayload.job_category_id ? BigInt(jobPayload.job_category_id) : null;
+      jobData.experience_min = jobPayload.experience_min ?? 0;
+      jobData.experience_max = jobPayload.experience_max ?? 0;
+    }
+
     const created = await tx.jobs.create({
-      data: {
-        company_id: targetCompanyId,
-        job_code: jobCode,
-        title: jobPayload.title.trim(),
-        job_category_id: jobPayload.job_category_id ? BigInt(jobPayload.job_category_id) : null,
-        employment_type_id: jobPayload.employment_type_id ? BigInt(jobPayload.employment_type_id) : null,
-        qualification_id: jobPayload.qualification_id ? BigInt(jobPayload.qualification_id) : null,
-        experience_min: jobPayload.experience_min ?? 0,
-        experience_max: jobPayload.experience_max ?? 0,
-        salary_min: jobPayload.salary_min != null ? jobPayload.salary_min : null,
-        salary_max: jobPayload.salary_max != null ? jobPayload.salary_max : null,
-        salary_negotiable: Boolean(jobPayload.salary_negotiable),
-        positions_required: parseInt(jobPayload.positions_required, 10) || 1,
-        last_date: jobPayload.last_date ? new Date(jobPayload.last_date) : null,
-        country_id: jobPayload.country_id ? BigInt(jobPayload.country_id) : null,
-        state_id: jobPayload.state_id ? BigInt(jobPayload.state_id) : null,
-        city_id: jobPayload.city_id ? BigInt(jobPayload.city_id) : null,
-        description: jobPayload.description || null,
-        responsibilities: jobPayload.responsibilities || null,
-        benefits: jobPayload.benefits || null,
-        status: 'open'
-      }
+      data: jobData
     });
 
     if (skills && skills.length > 0) {
@@ -79,6 +128,8 @@ async function createJob(data, currentUser, req = null) {
     return created;
   });
 
+  const jobTitle = job.custom_title || (typeof job.title === 'string' ? job.title : job.title?.name) || 'Job Requirement';
+
   // Notify Admin and Staff of newly posted job (Flow F4)
   if (currentUser.role === 'company') {
     const staffAndAdmins = await prisma.users.findMany({
@@ -89,7 +140,7 @@ async function createJob(data, currentUser, req = null) {
       userIds: staffAndAdmins.map((u) => u.id),
       type: 'job_posted_admin',
       title: 'New Job Requirement Posted',
-      message: `A new job '${job.title}' (${job.job_code}) was posted and requires staff assignment.`,
+      message: `A new job '${jobTitle}' (${job.job_code}) was posted and requires staff assignment.`,
       refType: 'job',
       refId: job.id
     });
@@ -100,7 +151,7 @@ async function createJob(data, currentUser, req = null) {
     action: 'create',
     moduleName: 'jobs',
     recordId: job.id,
-    newValue: { title: job.title, job_code: job.job_code, company_id: targetCompanyId },
+    newValue: { title: jobTitle, job_code: job.job_code, company_id: targetCompanyId },
     req
   });
 
@@ -126,13 +177,14 @@ async function listJobs(query = {}, currentUser) {
   }
 
   if (query.assignedTo) {
-    where.assigned_to = BigInt(query.assignedTo);
+    where.assigned_staff_id = BigInt(query.assignedTo);
   }
 
   if (query.search) {
+    const s = String(query.search).trim();
     where.OR = [
-      { title: { startsWith: query.search } },
-      { job_code: { startsWith: query.search } }
+      { custom_title: { contains: s } },
+      { job_code: { contains: s } }
     ];
   }
 
@@ -143,26 +195,24 @@ async function listJobs(query = {}, currentUser) {
       take,
       include: {
         company: true,
-        job_category: true,
+        title: true,
+        category: true,
         employment_type: true,
-        assigned_user: { select: { id: true, name: true, email: true } },
-        skills: { include: { skill: true } }
+        qualification: true,
+        city: true,
+        assigned_staff: { select: { id: true, name: true, email: true } },
+        job_skills: { include: { skill: true } }
       },
       orderBy: { created_at: 'desc' }
     }),
     prisma.jobs.count({ where })
   ]);
 
-  // Attach computed counts (submitted, confirmed, remaining)
+  // Attach computed counts and enrich object for backward-compatibility with UI & API contracts
   const enrichedItems = await Promise.all(
     items.map(async (job) => {
       const counts = await computeJobMetrics(job.id, job.positions_required);
-      const titleStr = job.custom_title || (typeof job.title === 'string' ? job.title : job.title?.name) || 'Untitled Job';
-      return {
-        ...job,
-        title: titleStr,
-        ...counts
-      };
+      return formatJobRecord(job, counts);
     })
   );
 
@@ -179,11 +229,13 @@ async function getJobById(id, currentUser) {
     where: { id: jobId, deleted_at: null },
     include: {
       company: true,
-      job_category: true,
+      title: true,
+      category: true,
       employment_type: true,
       qualification: true,
-      assigned_user: { select: { id: true, name: true, email: true } },
-      skills: { include: { skill: true } }
+      city: true,
+      assigned_staff: { select: { id: true, name: true, email: true } },
+      job_skills: { include: { skill: true } }
     }
   });
 
@@ -197,18 +249,12 @@ async function getJobById(id, currentUser) {
   }
 
   const counts = await computeJobMetrics(jobId, job.positions_required);
-  const titleStr = job.custom_title || (typeof job.title === 'string' ? job.title : job.title?.name) || 'Untitled Job';
-
-  return {
-    ...job,
-    title: titleStr,
-    ...counts
-  };
+  return formatJobRecord(job, counts);
 }
 
 async function computeJobMetrics(jobId, positionsRequired = 1) {
   const candidateMappings = await prisma.job_candidates.findMany({
-    where: { job_id: jobId, deleted_at: null }
+    where: { job_id: jobId }
   });
 
   const submitted_count = candidateMappings.length;
@@ -248,14 +294,35 @@ async function updateJob(id, data, currentUser, req = null) {
   }
 
   const { skills, ...payload } = data;
+  const isRealPrisma = Boolean(prisma.$queryRaw);
+
+  const updatePayload = {
+    ...payload,
+    updated_at: new Date()
+  };
+
+  if (payload.title !== undefined) {
+    updatePayload.custom_title = payload.title ? payload.title.trim() : null;
+    if (isRealPrisma) delete updatePayload.title;
+  }
+  if (payload.job_category_id !== undefined || payload.category_id !== undefined) {
+    const catId = payload.category_id || payload.job_category_id;
+    updatePayload.category_id = catId ? BigInt(catId) : null;
+    if (isRealPrisma) delete updatePayload.job_category_id;
+  }
+  if (payload.experience_min !== undefined) {
+    updatePayload.exp_min = payload.experience_min;
+    if (isRealPrisma) delete updatePayload.experience_min;
+  }
+  if (payload.experience_max !== undefined) {
+    updatePayload.exp_max = payload.experience_max;
+    if (isRealPrisma) delete updatePayload.experience_max;
+  }
 
   const updated = await prisma.$transaction(async (tx) => {
     const res = await tx.jobs.update({
       where: { id: jobId },
-      data: {
-        ...payload,
-        updated_at: new Date()
-      }
+      data: updatePayload
     });
 
     if (skills) {
@@ -336,22 +403,32 @@ async function assignStaff(id, { assigned_to }, currentUser, req = null) {
     throw new ApiError(422, 'Assigned user must be an active staff member or administrator');
   }
 
+  const updateData = {
+    assigned_staff_id: staffUserId,
+    updated_at: new Date()
+  };
+  if (!prisma.$queryRaw) {
+    updateData.assigned_to = staffUserId;
+  }
+
   const updated = await prisma.jobs.update({
     where: { id: jobId },
-    data: { assigned_to: staffUserId, updated_at: new Date() }
+    data: updateData
   });
+
+  const jobTitle = job.custom_title || (typeof job.title === 'string' ? job.title : job.title?.name) || 'Job Requirement';
 
   // Notify assigned staff member (Flow F5)
   await notify({
     userIds: [staffUserId],
     type: 'job_assigned_staff',
     title: 'New Job Requirement Assigned',
-    message: `You have been assigned to source and map candidates for job '${job.title}' (${job.job_code}).`,
+    message: `You have been assigned to source and map candidates for job '${jobTitle}' (${job.job_code}).`,
     refType: 'job',
     refId: jobId,
     email: {
       to: staffUser.email,
-      subject: `Assigned to Job: ${job.title} (${job.job_code})`
+      subject: `Assigned to Job: ${jobTitle} (${job.job_code})`
     }
   });
 
@@ -360,7 +437,7 @@ async function assignStaff(id, { assigned_to }, currentUser, req = null) {
     action: 'assign',
     moduleName: 'jobs',
     recordId: jobId,
-    oldValue: { assigned_to: job.assigned_to },
+    oldValue: { assigned_to: job.assigned_staff_id || job.assigned_to },
     newValue: { assigned_to: staffUserId },
     req
   });

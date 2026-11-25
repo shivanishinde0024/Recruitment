@@ -280,13 +280,10 @@ async function getCompanyDrillDown(companyId) {
 async function getStaffDashboard(staffUserId) {
   const uId = BigInt(staffUserId);
 
-  // Assigned jobs (supports assigned_staff_id and assigned_to in mock)
+  // Assigned jobs (supports assigned_staff_id and assigned_to)
   const assignedJobs = await prisma.jobs.findMany({
     where: {
-      OR: [
-        { assigned_staff_id: uId },
-        { assigned_to: uId }
-      ],
+      assigned_staff_id: uId,
       deleted_at: null
     },
     include: {
@@ -307,10 +304,7 @@ async function getStaffDashboard(staffUserId) {
   // Candidates uploaded by this staff member (supports uploaded_by and created_by)
   const candidatesUploaded = await prisma.candidates.count({
     where: {
-      OR: [
-        { uploaded_by: uId },
-        { created_by: uId }
-      ],
+      uploaded_by: uId,
       deleted_at: null
     }
   });
@@ -596,30 +590,21 @@ async function getStaffPerformance() {
   for (const s of staffUsers) {
     const assignedJobs = await prisma.jobs.count({
       where: {
-        OR: [
-          { assigned_staff_id: s.id },
-          { assigned_to: s.id }
-        ],
+        assigned_staff_id: s.id,
         deleted_at: null
       }
     });
 
     const candidatesUploaded = await prisma.candidates.count({
       where: {
-        OR: [
-          { uploaded_by: s.id },
-          { created_by: s.id }
-        ],
+        uploaded_by: s.id,
         deleted_at: null
       }
     });
 
     const mappings = await prisma.job_candidates.findMany({
       where: {
-        OR: [
-          { submitted_by: s.id },
-          { created_by: s.id }
-        ]
+        submitted_by: s.id
       }
     });
 

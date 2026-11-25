@@ -25,7 +25,7 @@ async function checkApproachingDeadlines() {
     },
     include: {
       company: true,
-      assignedStaff: true
+      assigned_staff: true
     }
   });
 
@@ -47,13 +47,16 @@ async function checkApproachingDeadlines() {
         ? 'DUE TODAY'
         : `Due in ${diffDays} day(s)`;
 
+      const staffId = job.assigned_staff_id || job.assigned_to || job.assigned_staff?.id;
+      const jobTitle = job.custom_title || (typeof job.title === 'string' ? job.title : job.title?.name) || 'Job Requisition';
+
       // Notify assigned staff if assigned
-      if (job.assigned_to) {
+      if (staffId) {
         await notify({
-          userId: job.assigned_to,
+          userId: staffId,
           type: 'job_deadline_reminder',
           title: `Requisition Deadline Alert: ${job.job_code}`,
-          message: `Job "${job.title}" (${job.job_code}) for ${job.company?.company_name || 'Client'} is ${urgencyLabel} (${deadline.toISOString().split('T')[0]}).`,
+          message: `Job "${jobTitle}" (${job.job_code}) for ${job.company?.company_name || 'Client'} is ${urgencyLabel} (${deadline.toISOString().split('T')[0]}).`,
           link: `/admin/jobs/${job.id}`,
           metadata: {
             jobId: String(job.id),

@@ -47,7 +47,18 @@ class InMemoryTable {
         continue;
       }
 
-      const val = record[key];
+      let val = record[key];
+      if (val === undefined) {
+        if (key === 'assigned_staff_id') val = record.assigned_to ?? record.assigned_staff_id;
+        else if (key === 'assigned_to') val = record.assigned_staff_id ?? record.assigned_to;
+        else if (key === 'category_id') val = record.job_category_id ?? record.category_id;
+        else if (key === 'job_category_id') val = record.category_id ?? record.job_category_id;
+        else if (key === 'uploaded_by') val = record.created_by ?? record.uploaded_by;
+        else if (key === 'created_by') val = record.uploaded_by ?? record.created_by;
+        else if (key === 'submitted_by') val = record.created_by ?? record.submitted_by;
+        else if (key === 'custom_title') val = typeof record.title === 'string' ? record.title : record.title?.name;
+        else if (key === 'title') val = record.custom_title;
+      }
 
       if (condition === null) {
         if (val !== null && val !== undefined) return false;
@@ -61,7 +72,10 @@ class InMemoryTable {
           if (String(val) === String(condition.not)) return false;
         }
         if ('startsWith' in condition) {
-          if (typeof val !== 'string' || !val.startsWith(condition.startsWith)) return false;
+          if (typeof val !== 'string' || !val.toLowerCase().startsWith(String(condition.startsWith).toLowerCase())) return false;
+        }
+        if ('contains' in condition) {
+          if (typeof val !== 'string' || !val.toLowerCase().includes(String(condition.contains).toLowerCase())) return false;
         }
         if ('gt' in condition) {
           if (!(val > condition.gt)) return false;
@@ -124,9 +138,17 @@ class InMemoryTable {
       });
     }
 
-    if (include.job_category && record.job_category_id) {
-      enriched.job_category = await this.client.job_categories.findUnique({
-        where: { id: record.job_category_id }
+    if ((include.job_category || include.category) && (record.job_category_id || record.category_id)) {
+      const cat = await this.client.job_categories.findUnique({
+        where: { id: record.job_category_id || record.category_id }
+      });
+      enriched.job_category = cat;
+      enriched.category = cat;
+    }
+
+    if (include.title && record.title_id) {
+      enriched.title = await this.client.job_titles.findUnique({
+        where: { id: record.title_id }
       });
     }
 
@@ -142,17 +164,22 @@ class InMemoryTable {
       });
     }
 
-    if (include.assigned_user && record.assigned_to) {
-      enriched.assigned_user = await this.client.users.findUnique({
-        where: { id: record.assigned_to }
+    if ((include.assigned_user || include.assigned_staff || include.assignedStaff) && (record.assigned_to || record.assigned_staff_id)) {
+      const staff = await this.client.users.findUnique({
+        where: { id: record.assigned_to || record.assigned_staff_id }
       });
+      enriched.assigned_user = staff;
+      enriched.assigned_staff = staff;
+      enriched.assignedStaff = staff;
     }
 
-    if (include.skills && this.name === 'jobs') {
-      enriched.skills = await this.client.job_skills.findMany({
+    if ((include.skills || include.job_skills) && this.name === 'jobs') {
+      const skillsData = await this.client.job_skills.findMany({
         where: { job_id: record.id },
-        include: include.skills.include
+        include: (include.skills?.include || include.job_skills?.include)
       });
+      enriched.skills = skillsData;
+      enriched.job_skills = skillsData;
     }
 
     if ((include.skills || include.candidate_skills) && this.name === 'candidates') {
@@ -162,12 +189,6 @@ class InMemoryTable {
       });
       enriched.skills = skillsData;
       enriched.candidate_skills = skillsData;
-    }
-
-    if (include.assignedStaff && record.assigned_to) {
-      enriched.assignedStaff = await this.client.users.findUnique({
-        where: { id: record.assigned_to }
-      });
     }
 
     if (include.uploader && record.uploaded_by) {
@@ -268,6 +289,13 @@ class InMemoryTable {
       if (record.revoked_at === undefined) record.revoked_at = null;
     } else if (this.name === 'password_resets') {
       if (record.used_at === undefined) record.used_at = null;
+    } else if (this.name === 'jobs') {
+      if (record.assigned_staff_id && !record.assigned_to) record.assigned_to = record.assigned_staff_id;
+      if (record.assigned_to && !record.assigned_staff_id) record.assigned_staff_id = record.assigned_to;
+      if (record.category_id && !record.job_category_id) record.job_category_id = record.category_id;
+      if (record.job_category_id && !record.category_id) record.category_id = record.job_category_id;
+      if (record.custom_title && !record.title) record.title = record.custom_title;
+      if (record.title && !record.custom_title && typeof record.title === 'string') record.custom_title = record.title;
     }
 
     this.records.push(record);
@@ -294,6 +322,14 @@ class InMemoryTable {
       ...data,
       updated_at: new Date()
     };
+    if (this.name === 'jobs') {
+      if (data.assigned_staff_id && !updated.assigned_to) updated.assigned_to = data.assigned_staff_id;
+      if (data.assigned_to && !updated.assigned_staff_id) updated.assigned_staff_id = data.assigned_to;
+      if (data.category_id && !updated.job_category_id) updated.job_category_id = data.category_id;
+      if (data.job_category_id && !updated.category_id) updated.category_id = data.job_category_id;
+      if (data.custom_title && !updated.title) updated.title = data.custom_title;
+      if (data.title && !updated.custom_title && typeof data.title === 'string') updated.custom_title = data.title;
+    }
     this.records[index] = updated;
     return this._clone(updated);
   }

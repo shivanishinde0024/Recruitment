@@ -10,8 +10,9 @@
 function calculateMatchScore(job, candidate) {
   // 1. Skills Score (Max 50 points)
   let skillsScore = 0;
-  const jobSkills = job.skills || [];
-  const candidateSkillIds = new Set((candidate.skills || []).map((cs) => String(cs.skill_id)));
+  const jobSkills = job.job_skills || job.skills || [];
+  const candidateSkills = candidate.candidate_skills || candidate.skills || [];
+  const candidateSkillIds = new Set(candidateSkills.map((cs) => String(cs.skill_id)));
 
   if (jobSkills.length === 0) {
     skillsScore = 50;

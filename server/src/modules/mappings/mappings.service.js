@@ -10,7 +10,7 @@ async function mapCandidatesToJob({ job_id, candidate_ids }, currentUser, req = 
   const job = await prisma.jobs.findFirst({
     where: { id: jobId, deleted_at: null },
     include: {
-      skills: true,
+      job_skills: true,
       company: true
     }
   });
@@ -35,8 +35,7 @@ async function mapCandidatesToJob({ job_id, candidate_ids }, currentUser, req = 
       where: {
         job_id: jobId,
         candidate_id: candidateId,
-        status: { notIn: ['withdrawn', 'rejected'] },
-        deleted_at: null
+        status: { notIn: ['withdrawn', 'rejected'] }
       }
     });
 
@@ -47,7 +46,7 @@ async function mapCandidatesToJob({ job_id, candidate_ids }, currentUser, req = 
 
     const candidate = await prisma.candidates.findFirst({
       where: { id: candidateId, deleted_at: null },
-      include: { skills: true }
+      include: { candidate_skills: true }
     });
 
     if (!candidate) {
@@ -138,7 +137,7 @@ async function getSuggestedCandidates(jobId, currentUser) {
   const job = await prisma.jobs.findFirst({
     where: { id: jId, deleted_at: null },
     include: {
-      skills: true,
+      job_skills: true,
       company: true
     }
   });
@@ -156,8 +155,7 @@ async function getSuggestedCandidates(jobId, currentUser) {
   const existingMappings = await prisma.job_candidates.findMany({
     where: {
       job_id: jId,
-      status: { notIn: ['withdrawn', 'rejected'] },
-      deleted_at: null
+      status: { notIn: ['withdrawn', 'rejected'] }
     },
     select: { candidate_id: true }
   });
@@ -170,7 +168,7 @@ async function getSuggestedCandidates(jobId, currentUser) {
       status: { in: ['available', 'mapped'] }
     },
     include: {
-      skills: true,
+      candidate_skills: true,
       qualification: true
     }
   });
@@ -221,7 +219,7 @@ async function listJobMappings(jobId, query = {}, currentUser) {
     include: {
       candidate: {
         include: {
-          skills: { include: { skill: true } },
+          candidate_skills: { include: { skill: true } },
           qualification: true
         }
       },
@@ -260,7 +258,7 @@ async function reviewCandidate(mappingId, { action, remark }, currentUser, req =
   const mId = BigInt(mappingId);
 
   const mapping = await prisma.job_candidates.findFirst({
-    where: { id: mId, deleted_at: null },
+    where: { id: mId },
     include: {
       job: { include: { company: true } },
       candidate: true
@@ -421,7 +419,7 @@ async function withdrawMapping(mappingId, { reason }, currentUser, req = null) {
   const mId = BigInt(mappingId);
 
   const mapping = await prisma.job_candidates.findFirst({
-    where: { id: mId, deleted_at: null },
+    where: { id: mId },
     include: { job: true, candidate: true }
   });
 
