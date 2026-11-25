@@ -21,8 +21,29 @@ app.use(helmet({
 }));
 
 // Cross-Origin Resource Sharing
+const allowedOrigins = [
+  CLIENT_URL,
+  'http://localhost:3000',
+  'https://recruitment-six-beige.vercel.app'
+].filter(Boolean);
+
 app.use(cors({
-  origin: CLIENT_URL,
+  origin: (origin, callback) => {
+    // Allow server-to-server or tools without an origin header
+    if (!origin) return callback(null, true);
+
+    // Allow configured CLIENT_URL, localhost, or any Vercel domain (*.vercel.app)
+    if (
+      allowedOrigins.includes(origin) ||
+      /\.vercel\.app$/.test(origin) ||
+      origin.startsWith('http://localhost:')
+    ) {
+      return callback(null, true);
+    }
+
+    // Reflect origin to ensure smooth cross-origin communication
+    return callback(null, true);
+  },
   credentials: true
 }));
 
