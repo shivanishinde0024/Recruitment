@@ -5,9 +5,13 @@ import { Modal, Button, Form } from 'react-bootstrap';
 
 export default function RemarkModal({
   show,
+  isOpen,
   onHide,
+  onCancel,
   onSubmit,
+  onConfirm,
   title = 'Provide Remark',
+  label,
   actionLabel = 'Submit',
   actionVariant = 'primary',
   required = true,
@@ -16,6 +20,9 @@ export default function RemarkModal({
   const [remark, setRemark] = useState('');
   const [error, setError] = useState('');
 
+  const isVisible = show !== undefined ? Boolean(show) : Boolean(isOpen);
+  const handleAction = onSubmit || onConfirm;
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (required && !remark.trim()) {
@@ -23,17 +30,20 @@ export default function RemarkModal({
       return;
     }
     setError('');
-    onSubmit(remark.trim());
+    if (handleAction) {
+      handleAction(remark.trim());
+    }
   };
 
   const handleClose = () => {
     setRemark('');
     setError('');
-    onHide();
+    if (onHide) onHide();
+    else if (onCancel) onCancel();
   };
 
   return (
-    <Modal show={show} onHide={handleClose} centered backdrop="static">
+    <Modal show={isVisible} onHide={handleClose} centered backdrop="static">
       <Form onSubmit={handleSubmit}>
         <Modal.Header closeButton>
           <Modal.Title className="h5 fw-bold">{title}</Modal.Title>
@@ -42,7 +52,7 @@ export default function RemarkModal({
           {error && <div className="alert alert-danger py-2 small">{error}</div>}
           <Form.Group>
             <Form.Label className="small fw-semibold">
-              Remark / Reason {required && <span className="text-danger">*</span>}
+              {label || 'Remark / Reason'} {required && <span className="text-danger">*</span>}
             </Form.Label>
             <Form.Control
               as="textarea"

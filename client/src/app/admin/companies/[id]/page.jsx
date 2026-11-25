@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'react-toastify';
 import api from '../../../../services/api';
 import StatusBadge from '../../../../components/ui/StatusBadge';
 import ConfirmModal from '../../../../components/modals/ConfirmModal';
@@ -50,10 +51,12 @@ export default function AdminCompanyDetailPage() {
       });
       if (res.data?.success) {
         setCompany(res.data.data);
+        toast.success(res.data?.message || `Company verification status updated to '${res.data?.data?.status || action}'`);
         await fetchCompanyDetails();
       }
     } catch (err) {
-      alert(err.response?.data?.message || `Failed to perform verification action '${action}'`);
+      const msg = err.response?.data?.message || `Failed to perform verification action '${action}'`;
+      toast.error(msg);
     } finally {
       setActionLoading(false);
       setConfirmModal({ isOpen: false, action: null, title: '', message: '' });
@@ -430,21 +433,30 @@ export default function AdminCompanyDetailPage() {
 
       {/* Confirmation Modal */}
       <ConfirmModal
+        show={confirmModal.isOpen}
         isOpen={confirmModal.isOpen}
         title={confirmModal.title}
         message={confirmModal.message}
         confirmText="Confirm"
-        confirmVariant="success"
+        confirmVariant={confirmModal.action === 'approve' ? 'success' : 'primary'}
+        loading={actionLoading}
+        onHide={() => setConfirmModal({ isOpen: false, action: null, title: '', message: '' })}
         onConfirm={() => executeVerification(confirmModal.action)}
         onCancel={() => setConfirmModal({ isOpen: false, action: null, title: '', message: '' })}
       />
 
       {/* Mandatory Remark Modal */}
       <RemarkModal
+        show={remarkModal.isOpen}
         isOpen={remarkModal.isOpen}
         title={remarkModal.title}
         label={remarkModal.label}
+        actionLabel={remarkModal.action === 'reject' ? 'Reject Company' : remarkModal.action === 'suspend' ? 'Suspend Account' : 'Submit Request'}
+        actionVariant={remarkModal.action === 'reject' || remarkModal.action === 'suspend' ? 'danger' : 'warning'}
         required={true}
+        loading={actionLoading}
+        onHide={() => setRemarkModal({ isOpen: false, action: null, title: '', label: '' })}
+        onSubmit={(remark) => executeVerification(remarkModal.action, remark)}
         onConfirm={(remark) => executeVerification(remarkModal.action, remark)}
         onCancel={() => setRemarkModal({ isOpen: false, action: null, title: '', label: '' })}
       />
