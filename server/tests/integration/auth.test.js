@@ -101,6 +101,71 @@ describe('Integration: Authentication Module (Phase 1 / Flows F1, F12)', () => {
       expect(cookieStr).toContain('HttpOnly');
     });
 
+    it('should reject login for company with pending approval with 403', async () => {
+      const compEmail = 'pending_company@portal.com';
+      const hash = await bcrypt.hash(rawPassword, 12);
+      const user = await prisma.users.create({
+        data: {
+          name: 'Pending Company User',
+          email: compEmail,
+          password_hash: hash,
+          role: 'company',
+          status: 'active'
+        }
+      });
+      await prisma.companies.create({
+        data: {
+          user_id: user.id,
+          company_name: 'Pending Corp',
+          contact_person: 'John Doe',
+          contact_email: compEmail,
+          contact_mobile: '9876543210',
+          status: 'pending'
+        }
+      });
+
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: compEmail, password: rawPassword });
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toMatch(/pending approval/i);
+    });
+
+    it('should allow login for company once approved with 200', async () => {
+      const compEmail = 'approved_company@portal.com';
+      const hash = await bcrypt.hash(rawPassword, 12);
+      const user = await prisma.users.create({
+        data: {
+          name: 'Approved Company User',
+          email: compEmail,
+          password_hash: hash,
+          role: 'company',
+          status: 'active'
+        }
+      });
+      await prisma.companies.create({
+        data: {
+          user_id: user.id,
+          company_name: 'Approved Corp',
+          contact_person: 'Jane Doe',
+          contact_email: compEmail,
+          contact_mobile: '9876543211',
+          status: 'approved'
+        }
+      });
+
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: compEmail, password: rawPassword });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.role).toBe('company');
+      expect(res.body.data.user.companyStatus).toBe('approved');
+    });
+
     it('should trigger account lockout (HTTP 423) after 5 consecutive failures (Flow F12)', async () => {
       const lockEmail = 'lockout@portal.com';
       const hash = await bcrypt.hash(rawPassword, 12);

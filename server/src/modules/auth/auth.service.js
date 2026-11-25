@@ -113,6 +113,38 @@ async function login({ email, password }, meta = {}, req = null) {
     throw new ApiError(401, 'Invalid email or password');
   }
 
+  // Validate company approval status if role is company (Approach 1: Strict Verification Gate)
+  let company = null;
+  if (user.role === 'company') {
+    company = await prisma.companies.findFirst({
+      where: { user_id: user.id, deleted_at: null }
+    });
+
+    if (!company) {
+      throw new ApiError(403, 'No company profile found associated with this account. Please contact administrator.');
+    }
+
+    if (company.status === 'pending') {
+      throw new ApiError(403, 'Your company registration is pending approval by administrator. You will be able to log in once your account has been verified.');
+    }
+
+    if (company.status === 'need_info') {
+      throw new ApiError(403, 'Additional verification information is required for your company account. Please check your email or contact administrator.');
+    }
+
+    if (company.status === 'rejected') {
+      throw new ApiError(403, 'Your company registration has been rejected. Please contact administrator.');
+    }
+
+    if (company.status === 'suspended') {
+      throw new ApiError(403, 'Your company account is currently suspended. Please contact administrator.');
+    }
+
+    if (company.status !== 'approved') {
+      throw new ApiError(403, `Company access is restricted (Status: ${company.status}). Please contact administrator.`);
+    }
+  }
+
   // Reset failed attempts on success
   await prisma.users.update({
     where: { id: user.id },
@@ -122,14 +154,6 @@ async function login({ email, password }, meta = {}, req = null) {
       last_login: new Date()
     }
   });
-
-  // Fetch company info if role is company
-  let company = null;
-  if (user.role === 'company') {
-    company = await prisma.companies.findFirst({
-      where: { user_id: user.id, deleted_at: null }
-    });
-  }
 
   const { accessToken, refreshToken } = await generateTokenPair(user, meta);
 
@@ -193,6 +217,16 @@ async function refresh({ refreshToken, meta = {} }) {
   const user = existingToken.user;
   if (!user || user.deleted_at !== null || user.status !== 'active') {
     throw new ApiError(401, 'Account inactive or deleted');
+  }
+
+  // Guard active refresh for company users
+  if (user.role === 'company') {
+    const company = await prisma.companies.findFirst({
+      where: { user_id: user.id, deleted_at: null }
+    });
+    if (!company || company.status !== 'approved') {
+      throw new ApiError(403, 'Company registration is not approved or currently suspended');
+    }
   }
 
   // Revoke the used refresh token
