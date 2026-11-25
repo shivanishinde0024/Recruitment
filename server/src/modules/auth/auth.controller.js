@@ -21,14 +21,14 @@ function setAuthCookies(res, accessToken, refreshToken) {
       secure: isProd,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/api/v1/auth'
+      path: '/'
     });
   }
 }
 
 function clearAuthCookies(res) {
   res.clearCookie('access_token', { path: '/' });
-  res.clearCookie('refresh_token', { path: '/api/v1/auth' });
+  res.clearCookie('refresh_token', { path: '/' });
 }
 
 exports.login = async (req, res) => {
@@ -42,7 +42,8 @@ exports.login = async (req, res) => {
 
   return ok(res, {
     user: result.user,
-    token: result.accessToken
+    token: result.accessToken,
+    refreshToken: result.refreshToken
   }, 'Login successful');
 };
 
@@ -58,7 +59,8 @@ exports.refresh = async (req, res) => {
 
   return ok(res, {
     user: result.user,
-    token: result.accessToken
+    token: result.accessToken,
+    refreshToken: result.refreshToken
   }, 'Token refreshed successfully');
 };
 

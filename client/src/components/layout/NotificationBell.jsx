@@ -2,14 +2,28 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function NotificationBell() {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const isPollingRef = useRef(true);
 
   const fetchNotifications = async () => {
+    if (!isPollingRef.current) return;
+
+    // Check if authentication credentials exist before initiating request
+    const hasToken =
+      (typeof localStorage !== 'undefined' && (localStorage.getItem('access_token') || localStorage.getItem('refresh_token'))) ||
+      (typeof document !== 'undefined' && document.cookie.includes('access_token='));
+    if (!hasToken) {
+      isPollingRef.current = false;
+      return;
+    }
+
     try {
       const res = await api.get('/notifications?limit=10');
       if (res.data?.success) {
@@ -17,16 +31,30 @@ export default function NotificationBell() {
         const unread = (res.data.data || []).filter((n) => !n.is_read).length;
         setUnreadCount(unread);
       }
-    } catch {
-      // Fallback silently if offline or token expired
+    } catch (err) {
+      // If 401 Unauthorized, halt further background polling intervals until re-authenticated
+      if (err.response?.status === 401) {
+        isPollingRef.current = false;
+      }
     }
   };
 
   useEffect(() => {
+    if (!user) {
+      setNotifications([]);
+      setUnreadCount(0);
+      isPollingRef.current = false;
+      return;
+    }
+
+    isPollingRef.current = true;
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // 30s poll
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30000); // 30s poll
+
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   // Close dropdown on click outside
   useEffect(() => {

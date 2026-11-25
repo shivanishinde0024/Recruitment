@@ -38,9 +38,11 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       if (!refreshPromise) {
-        refreshPromise = api.post('/auth/refresh')
+        const storedRefreshToken = typeof localStorage !== 'undefined' ? localStorage.getItem('refresh_token') : null;
+        refreshPromise = api.post('/auth/refresh', { refreshToken: storedRefreshToken || undefined })
           .then((res) => {
             const newToken = res.data?.data?.token;
+            const newRefreshToken = res.data?.data?.refreshToken;
             const newUser = res.data?.data?.user;
             if (newToken) {
               if (typeof localStorage !== 'undefined') {
@@ -49,6 +51,9 @@ api.interceptors.response.use(
               if (typeof document !== 'undefined') {
                 document.cookie = `access_token=${newToken}; path=/; max-age=604800; SameSite=Lax`;
               }
+            }
+            if (newRefreshToken && typeof localStorage !== 'undefined') {
+              localStorage.setItem('refresh_token', newRefreshToken);
             }
             if (newUser && typeof localStorage !== 'undefined') {
               localStorage.setItem('rp_user', JSON.stringify(newUser));
@@ -60,6 +65,7 @@ api.interceptors.response.use(
             refreshPromise = null;
             if (typeof localStorage !== 'undefined') {
               localStorage.removeItem('access_token');
+              localStorage.removeItem('refresh_token');
               localStorage.removeItem('rp_user');
             }
             if (typeof document !== 'undefined') {

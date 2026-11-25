@@ -67,10 +67,12 @@ export function AuthProvider({ children }) {
     if (res.data?.success) {
       const loggedInUser = res.data.data.user;
       const token = res.data.data.token;
+      const refreshToken = res.data.data.refreshToken;
 
-      // 1. Explicitly store access_token and user info so Next.js Edge Middleware & Client both detect it
+      // 1. Explicitly store access_token, refresh_token, and user info
       if (typeof localStorage !== 'undefined') {
         if (token) localStorage.setItem('access_token', token);
+        if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
         if (loggedInUser) localStorage.setItem('rp_user', JSON.stringify(loggedInUser));
       }
       if (token && typeof document !== 'undefined') {
@@ -107,6 +109,7 @@ export function AuthProvider({ children }) {
       }
       if (typeof localStorage !== 'undefined') {
         localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
         localStorage.removeItem('rp_user');
       }
       setUser(null);
