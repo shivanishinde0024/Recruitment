@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import api from '../../../services/api';
+import { downloadCandidateResume } from '../../../services/downloadResume';
 import DataTable from '../../../components/tables/DataTable';
 import FilterBar from '../../../components/forms/FilterBar';
 import StatusBadge from '../../../components/ui/StatusBadge';
@@ -21,6 +22,20 @@ export default function AdminCandidatesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [downloadingId, setDownloadingId] = useState(null);
+  const [downloadError, setDownloadError] = useState(null);
+
+  const handleDownloadResume = async (row) => {
+    setDownloadingId(row.id);
+    setDownloadError(null);
+    try {
+      await downloadCandidateResume(row.id, row.name);
+    } catch (err) {
+      setDownloadError(err?.response?.data?.message || err?.message || 'Failed to download resume');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   const fetchCandidates = useCallback(async (page = 1) => {
     setLoading(true);
@@ -120,15 +135,15 @@ export default function AdminCandidatesPage() {
             Profile
           </Link>
           {row.resume_path && (
-            <a
-              href={`/api/v1/candidates/${row.id}/resume`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => handleDownloadResume(row)}
+              disabled={downloadingId === row.id}
               className="btn btn-sm btn-outline-secondary"
               title="Download Resume"
             >
-              📄
-            </a>
+              {downloadingId === row.id ? '⏳' : '📄'}
+            </button>
           )}
         </div>
       )
@@ -153,6 +168,19 @@ export default function AdminCandidatesPage() {
           </Link>
         </div>
       </div>
+
+      {/* Error Banner */}
+      {downloadError && (
+        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          {downloadError}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setDownloadError(null)}
+            aria-label="Close"
+          />
+        </div>
+      )}
 
       {/* Filter Bar */}
       <div className="card shadow-sm border-0 mb-4 p-3">

@@ -4,10 +4,12 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import api from '../../../../services/api';
+import { useAuth } from '../../../../context/AuthContext';
 import LocationCascade from '../../../../components/forms/LocationCascade';
 
 export default function CreateCandidatePage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -44,22 +46,39 @@ export default function CreateCandidatePage() {
   const [currentSkillRating, setCurrentSkillRating] = useState(3);
 
   useEffect(() => {
+    if (authLoading || !user) return;
+    let cancelled = false;
+
     const fetchMasters = async () => {
       try {
         const [qualRes, srcRes, skillRes] = await Promise.all([
-          api.get('/masters/qualifications?limit=100').catch(() => ({ data: { data: [] } })),
-          api.get('/masters/candidate-sources?limit=100').catch(() => ({ data: { data: [] } })),
-          api.get('/masters/skills?limit=100').catch(() => ({ data: { data: [] } }))
+          api.get('/masters/qualifications?limit=100').catch((err) => {
+            console.error('Failed to load qualifications:', err);
+            return { data: { data: [] } };
+          }),
+          api.get('/masters/candidate-sources?limit=100').catch((err) => {
+            console.error('Failed to load candidate sources:', err);
+            return { data: { data: [] } };
+          }),
+          api.get('/masters/skills?limit=100').catch((err) => {
+            console.error('Failed to load skills:', err);
+            return { data: { data: [] } };
+          })
         ]);
-        setQualifications(qualRes.data?.data || []);
-        setSources(srcRes.data?.data || []);
-        setAvailableSkills(skillRes.data?.data || []);
-      } catch {
-        // Fallback silently
+        if (cancelled) return;
+        setQualifications((qualRes.data?.data || []).filter((q) => q.is_active !== false));
+        setSources((srcRes.data?.data || []).filter((s) => s.is_active !== false));
+        setAvailableSkills((skillRes.data?.data || []).filter((sk) => sk.is_active !== false));
+      } catch (err) {
+        console.error('Failed to load master dropdowns:', err);
       }
     };
     fetchMasters();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

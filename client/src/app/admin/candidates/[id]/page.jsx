@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../../../services/api';
+import { downloadCandidateResume } from '../../../../services/downloadResume';
 import StatusBadge from '../../../../components/ui/StatusBadge';
 import { useAuth } from '../../../../context/AuthContext';
 
@@ -15,6 +16,19 @@ export default function CandidateDetailPage() {
   const [candidate, setCandidate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadResume = async () => {
+    if (!candidate) return;
+    setDownloading(true);
+    try {
+      await downloadCandidateResume(candidate.id, candidate.name);
+    } catch (err) {
+      alert(err?.response?.data?.message || err?.message || 'Failed to download resume');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const fetchCandidate = useCallback(async () => {
     setLoading(true);
@@ -81,14 +95,14 @@ export default function CandidateDetailPage() {
 
           <div className="d-flex gap-2">
             {candidate.resume_path && (
-              <a
-                href={`/api/v1/candidates/${candidate.id}/resume`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={handleDownloadResume}
+                disabled={downloading}
                 className="btn btn-outline-primary btn-sm px-3"
               >
-                📄 Download Resume
-              </a>
+                {downloading ? 'Downloading...' : '📄 Download Resume'}
+              </button>
             )}
             <Link
               href={`/admin/jobs?mapCandidate=${candidate.id}`}

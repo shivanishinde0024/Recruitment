@@ -89,7 +89,10 @@ export default function RegisterPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const normalizedValue = ['gst_no', 'pan_no', 'cin_no'].includes(name)
+      ? value.toUpperCase()
+      : value;
+    setFormData((prev) => ({ ...prev, [name]: normalizedValue }));
   };
 
   const handleFileChange = (e) => {
@@ -610,7 +613,7 @@ export default function RegisterPage() {
                     <div className="row small">
                       <div className="col-sm-6 mb-1"><strong>Company:</strong> {formData.company_name}</div>
                       <div className="col-sm-6 mb-1"><strong>Owner:</strong> {formData.name} ({formData.email})</div>
-                      <div className="col-sm-6 mb-1"><strong>GST / PAN:</strong> {formData.gst_no || 'N/A'} / {formData.pan_no || 'N/A'}</div>
+                      <div className="col-sm-6 mb-1"><strong>GST / PAN:</strong> {formData.gst_no?.toUpperCase() || 'N/A'} / {formData.pan_no?.toUpperCase() || 'N/A'}</div>
                       <div className="col-sm-6 mb-1"><strong>Contact Person:</strong> {formData.contact_person} ({formData.contact_email})</div>
                     </div>
                   </div>

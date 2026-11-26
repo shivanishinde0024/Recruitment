@@ -4,6 +4,17 @@ const ApiError = require('../../utils/ApiError');
 const { parsePagination, buildMeta } = require('../../utils/pagination');
 const { recordAudit } = require('../../middleware/audit');
 
+const DEFAULT_CANDIDATE_SOURCES = [
+  'Direct Portal Upload',
+  'Employee Referral',
+  'LinkedIn Recruiter',
+  'Naukri.com',
+  'Monster / Foundit',
+  'Campus Placement',
+  'Job Fair',
+  'Staffing Agency Partner'
+];
+
 function getConfig(type) {
   const config = MASTERS_CONFIG[type];
   if (!config) {
@@ -34,7 +45,7 @@ async function listMasters(type, query = {}) {
     where[config.parentKey] = parseInt(query.parentId, 10);
   }
 
-  const [items, total] = await Promise.all([
+  let [items, total] = await Promise.all([
     model.findMany({
       where,
       skip,
@@ -43,6 +54,25 @@ async function listMasters(type, query = {}) {
     }),
     model.count({ where })
   ]);
+
+  if (type === 'candidate-sources' && total === 0 && !query.search && query.isActive === undefined) {
+    for (const name of DEFAULT_CANDIDATE_SOURCES) {
+      await model.upsert({
+        where: { name },
+        update: {},
+        create: { name }
+      }).catch(() => {});
+    }
+    [items, total] = await Promise.all([
+      model.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { name: 'asc' }
+      }),
+      model.count({ where })
+    ]);
+  }
 
   return {
     items,

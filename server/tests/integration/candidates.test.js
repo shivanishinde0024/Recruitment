@@ -251,6 +251,10 @@ describe('Phase 5: Candidates Module', () => {
 
       expect(res.status).toBe(200);
       expect(res.headers['content-disposition']).toMatch(/attachment; filename=/);
+      expect(res.headers['content-type']).toMatch(/application\/pdf/);
+      const pdfText = Buffer.isBuffer(res.body) ? res.body.toString('latin1') : String(res.text || '');
+      expect(pdfText.startsWith('%PDF-')).toBe(true);
+      expect(pdfText.trim().endsWith('%%EOF')).toBe(true);
     });
 
     it('blocks company user from downloading resume if candidate is NOT mapped to company job (returns 404)', async () => {
@@ -284,6 +288,10 @@ describe('Phase 5: Candidates Module', () => {
 
       expect(res.status).toBe(200);
       expect(res.headers['content-disposition']).toMatch(/attachment; filename=/);
+      expect(res.headers['content-type']).toMatch(/application\/pdf/);
+      const pdfText = Buffer.isBuffer(res.body) ? res.body.toString('latin1') : String(res.text || '');
+      expect(pdfText.startsWith('%PDF-')).toBe(true);
+      expect(pdfText.trim().endsWith('%%EOF')).toBe(true);
     });
   });
 

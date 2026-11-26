@@ -16,8 +16,17 @@ const {
 const ApiError = require('../../utils/ApiError');
 const { recordAudit } = require('../../middleware/audit');
 
+const INACTIVITY_TIMEOUT_MS = parseInt(process.env.INACTIVITY_TIMEOUT_MINUTES, 10)
+  ? parseInt(process.env.INACTIVITY_TIMEOUT_MINUTES, 10) * 60 * 1000
+  : 30 * 60 * 1000;
+
 function sha256(str) {
   return crypto.createHash('sha256').update(str).digest('hex');
+}
+
+function getAccessTokenExpiryMs(accessToken) {
+  const decoded = jwt.decode(accessToken);
+  return decoded?.exp ? decoded.exp * 1000 : null;
 }
 
 /**
@@ -177,7 +186,9 @@ async function login({ email, password }, meta = {}, req = null) {
       companyName: company ? company.company_name : null
     },
     accessToken,
-    refreshToken
+    refreshToken,
+    expiresAt: getAccessTokenExpiryMs(accessToken),
+    inactivityTimeoutMs: INACTIVITY_TIMEOUT_MS
   };
 }
 
@@ -220,8 +231,9 @@ async function refresh({ refreshToken, meta = {} }) {
   }
 
   // Guard active refresh for company users
+  let company = null;
   if (user.role === 'company') {
-    const company = await prisma.companies.findFirst({
+    company = await prisma.companies.findFirst({
       where: { user_id: user.id, deleted_at: null }
     });
     if (!company || company.status !== 'approved') {
@@ -247,23 +259,38 @@ async function refresh({ refreshToken, meta = {} }) {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
+      companyStatus: company ? company.status : null,
+      companyId: company ? company.id : null,
+      companyName: company ? company.company_name : null
     },
     accessToken,
-    refreshToken: newRefreshToken
+    refreshToken: newRefreshToken,
+    expiresAt: getAccessTokenExpiryMs(accessToken),
+    inactivityTimeoutMs: INACTIVITY_TIMEOUT_MS
   };
 }
 
 /**
- * Revokes refresh token and terminates session.
+ * Revokes refresh token and terminates session family.
  */
 async function logout({ refreshToken, userId = null }) {
   if (refreshToken) {
     const tokenHash = sha256(refreshToken);
-    await prisma.refresh_tokens.updateMany({
-      where: { token_hash: tokenHash, revoked_at: null },
-      data: { revoked_at: new Date() }
+    const existingToken = await prisma.refresh_tokens.findUnique({
+      where: { token_hash: tokenHash }
     });
+    if (existingToken?.family_id) {
+      await prisma.refresh_tokens.updateMany({
+        where: { family_id: existingToken.family_id, revoked_at: null },
+        data: { revoked_at: new Date() }
+      });
+    } else {
+      await prisma.refresh_tokens.updateMany({
+        where: { token_hash: tokenHash, revoked_at: null },
+        data: { revoked_at: new Date() }
+      });
+    }
   }
   return { success: true, message: 'Logged out successfully' };
 }
@@ -446,6 +473,7 @@ async function updateMe(userId, { name, mobile }) {
 }
 
 module.exports = {
+  INACTIVITY_TIMEOUT_MS,
   login,
   refresh,
   logout,

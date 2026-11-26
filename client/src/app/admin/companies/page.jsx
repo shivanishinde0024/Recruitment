@@ -57,7 +57,7 @@ export default function AdminCompaniesPage() {
         <div>
           <div className="fw-semibold text-dark">{row.company_name}</div>
           <div className="text-muted small">
-            {row.industry?.name || 'General Industry'} {row.gst_no ? `• GST: ${row.gst_no}` : ''}
+            {row.industry?.name || 'General Industry'} {row.gst_no ? `• GST: ${row.gst_no.toUpperCase()}` : ''}
           </div>
         </div>
       )

@@ -43,7 +43,9 @@ exports.login = async (req, res) => {
   return ok(res, {
     user: result.user,
     token: result.accessToken,
-    refreshToken: result.refreshToken
+    refreshToken: result.refreshToken,
+    expiresAt: result.expiresAt,
+    inactivityTimeoutMs: result.inactivityTimeoutMs
   }, 'Login successful');
 };
 
@@ -60,7 +62,9 @@ exports.refresh = async (req, res) => {
   return ok(res, {
     user: result.user,
     token: result.accessToken,
-    refreshToken: result.refreshToken
+    refreshToken: result.refreshToken,
+    expiresAt: result.expiresAt,
+    inactivityTimeoutMs: result.inactivityTimeoutMs
   }, 'Token refreshed successfully');
 };
 
@@ -94,7 +98,11 @@ exports.changePassword = async (req, res) => {
 
 exports.getMe = async (req, res) => {
   const user = await authService.getMe(req.user.id);
-  return ok(res, user, 'Profile loaded');
+  return ok(res, {
+    ...user,
+    sessionExpiresAt: req.tokenExp || null,
+    inactivityTimeoutMs: authService.INACTIVITY_TIMEOUT_MS
+  }, 'Profile loaded');
 };
 
 exports.updateMe = async (req, res) => {

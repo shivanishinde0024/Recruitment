@@ -1,8 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import api from '../services/api';
+import sessionManager from '../services/sessionManager';
 
 const AuthContext = createContext(null);
 
@@ -10,9 +11,12 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
-  // Hydrate cached user from localStorage on client mount to eliminate delay/flicker
+  // Initialize centralized session monitor and subscribe to cross-tab session events
   useEffect(() => {
+    sessionManager.init();
+
     if (typeof localStorage !== 'undefined') {
       try {
         const cachedUser = localStorage.getItem('rp_user');
@@ -26,32 +30,47 @@ export function AuthProvider({ children }) {
         // Ignore JSON parse errors
       }
     }
+
+    const unsubscribe = sessionManager.subscribe((event) => {
+      if (event.type === 'SESSION_RENEWED' && event.user) {
+        setUser(event.user);
+      } else if (event.type === 'SESSION_EXPIRED' || event.type === 'LOGOUT') {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      sessionManager.destroy();
+    };
   }, []);
+
+  // Record route navigation as user activity
+  useEffect(() => {
+    if (user && pathname) {
+      sessionManager.recordActivity(false);
+    }
+  }, [pathname, user]);
 
   const fetchCurrentUser = useCallback(async () => {
     try {
       const res = await api.get('/auth/me');
       if (res.data?.success && res.data?.data) {
-        setUser(res.data.data);
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('rp_user', JSON.stringify(res.data.data));
-        }
+        const { sessionExpiresAt, inactivityTimeoutMs, ...userData } = res.data.data;
+        setUser(userData);
+        sessionManager.startSession({
+          expiresAt: sessionExpiresAt || null,
+          inactivityTimeoutMs: inactivityTimeoutMs || null,
+          user: userData
+        });
       } else {
         setUser(null);
-        if (typeof localStorage !== 'undefined') {
-          localStorage.removeItem('rp_user');
-        }
+        sessionManager.clearSessionState();
       }
     } catch (err) {
       if (err.response?.status === 401) {
         setUser(null);
-        if (typeof localStorage !== 'undefined') {
-          localStorage.removeItem('rp_user');
-          localStorage.removeItem('access_token');
-        }
-        if (typeof document !== 'undefined') {
-          document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        }
+        sessionManager.clearSessionState();
       }
     } finally {
       setLoading(false);
@@ -65,23 +84,16 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     const res = await api.post('/auth/login', credentials);
     if (res.data?.success) {
-      const loggedInUser = res.data.data.user;
-      const token = res.data.data.token;
-      const refreshToken = res.data.data.refreshToken;
+      const { user: loggedInUser, expiresAt, inactivityTimeoutMs } = res.data.data;
 
-      // 1. Explicitly store access_token, refresh_token, and user info
-      if (typeof localStorage !== 'undefined') {
-        if (token) localStorage.setItem('access_token', token);
-        if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
-        if (loggedInUser) localStorage.setItem('rp_user', JSON.stringify(loggedInUser));
-      }
-      if (token && typeof document !== 'undefined') {
-        document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Lax`;
-      }
-
+      sessionManager.startSession({
+        expiresAt: expiresAt || null,
+        inactivityTimeoutMs: inactivityTimeoutMs || null,
+        user: loggedInUser
+      });
       setUser(loggedInUser);
 
-      // 2. Check for redirect query parameter (e.g. /login?redirect=%2Fadmin%2Fdashboard)
+      // Check for redirect query parameter (e.g. /login?redirect=%2Fadmin%2Fdashboard)
       let target = `/${loggedInUser.role}/dashboard`;
       if (typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
@@ -104,14 +116,7 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
-      if (typeof document !== 'undefined') {
-        document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      }
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('rp_user');
-      }
+      sessionManager.endSession({ broadcast: true, expired: false });
       setUser(null);
       if (typeof window !== 'undefined') {
         window.location.href = '/login';

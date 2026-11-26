@@ -275,15 +275,15 @@ export default function AdminCompanyDetailPage() {
                     </tr>
                     <tr>
                       <td className="text-muted">GST Number:</td>
-                      <td><code>{company.gst_no || 'Not Provided'}</code></td>
+                      <td><code>{company.gst_no ? company.gst_no.toUpperCase() : 'Not Provided'}</code></td>
                     </tr>
                     <tr>
                       <td className="text-muted">PAN Number:</td>
-                      <td><code>{company.pan_no || 'Not Provided'}</code></td>
+                      <td><code>{company.pan_no ? company.pan_no.toUpperCase() : 'Not Provided'}</code></td>
                     </tr>
                     <tr>
                       <td className="text-muted">CIN Number:</td>
-                      <td><code>{company.cin_no || 'Not Provided'}</code></td>
+                      <td><code>{company.cin_no ? company.cin_no.toUpperCase() : 'Not Provided'}</code></td>
                     </tr>
                     <tr>
                       <td className="text-muted">Registration Year:</td>

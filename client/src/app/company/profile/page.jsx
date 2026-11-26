@@ -60,8 +60,8 @@ export default function CompanyProfilePage() {
             state_id: comp.state_id || '',
             city_id: comp.city_id || '',
             pincode: comp.pincode || '',
-            gst_no: comp.gst_no || '',
-            pan_no: comp.pan_no || '',
+            gst_no: comp.gst_no ? comp.gst_no.toUpperCase() : '',
+            pan_no: comp.pan_no ? comp.pan_no.toUpperCase() : '',
             contact_person: comp.contact_person || '',
             contact_designation: comp.contact_designation || '',
             contact_email: comp.contact_email || '',
@@ -80,7 +80,10 @@ export default function CompanyProfilePage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const normalizedValue = ['gst_no', 'pan_no', 'cin_no'].includes(name)
+      ? value.toUpperCase()
+      : value;
+    setFormData((prev) => ({ ...prev, [name]: normalizedValue }));
   };
 
   const handleCascadeChange = ({ countryId, stateId, cityId }) => {

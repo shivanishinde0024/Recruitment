@@ -35,6 +35,23 @@ function normalizeCompanySize(val) {
   return COMPANY_SIZE_TO_ENUM[val] || null;
 }
 
+function normalizeTaxIdentifier(val) {
+  if (typeof val !== 'string') return null;
+  const trimmed = val.trim();
+  return trimmed ? trimmed.toUpperCase() : null;
+}
+
+function formatCompanyRecord(company) {
+  if (!company) return company;
+  return {
+    ...company,
+    gst_no: company.gst_no ? company.gst_no.toUpperCase() : company.gst_no,
+    pan_no: company.pan_no ? company.pan_no.toUpperCase() : company.pan_no,
+    cin_no: company.cin_no ? company.cin_no.toUpperCase() : company.cin_no,
+    company_size: formatCompanySize(company.company_size)
+  };
+}
+
 function formatCompanySize(val) {
   if (!val) return null;
   return ENUM_TO_COMPANY_SIZE[val] || val;
@@ -52,23 +69,27 @@ async function registerCompany(data, files = {}, req = null) {
     throw new ApiError(409, `User with email '${email}' is already registered`);
   }
 
+  const normalizedGst = normalizeTaxIdentifier(data.gst_no);
+  const normalizedPan = normalizeTaxIdentifier(data.pan_no);
+  const normalizedCin = normalizeTaxIdentifier(data.cin_no);
+
   // Check GST uniqueness if provided
-  if (data.gst_no) {
+  if (normalizedGst) {
     const existingGst = await prisma.companies.findFirst({
-      where: { gst_no: data.gst_no.trim(), deleted_at: null }
+      where: { gst_no: normalizedGst, deleted_at: null }
     });
     if (existingGst) {
-      throw new ApiError(409, `Company with GST number '${data.gst_no}' is already registered`);
+      throw new ApiError(409, `Company with GST number '${normalizedGst}' is already registered`);
     }
   }
 
   // Check PAN uniqueness if provided
-  if (data.pan_no) {
+  if (normalizedPan) {
     const existingPan = await prisma.companies.findFirst({
-      where: { pan_no: data.pan_no.trim(), deleted_at: null }
+      where: { pan_no: normalizedPan, deleted_at: null }
     });
     if (existingPan) {
-      throw new ApiError(409, `Company with PAN number '${data.pan_no}' is already registered`);
+      throw new ApiError(409, `Company with PAN number '${normalizedPan}' is already registered`);
     }
   }
 
@@ -101,9 +122,9 @@ async function registerCompany(data, files = {}, req = null) {
         company_name: companyName,
         industry_id: data.industry_id ? parseInt(data.industry_id, 10) : null,
         company_type_id: data.company_type_id ? parseInt(data.company_type_id, 10) : null,
-        gst_no: data.gst_no ? data.gst_no.trim() : null,
-        pan_no: data.pan_no ? data.pan_no.trim() : null,
-        cin_no: data.cin_no ? data.cin_no.trim() : null,
+        gst_no: normalizedGst,
+        pan_no: normalizedPan,
+        cin_no: normalizedCin,
         registration_year: data.registration_year ? parseInt(data.registration_year, 10) : null,
         company_size: normalizeCompanySize(data.company_size),
         website: data.website || null,
@@ -230,10 +251,7 @@ async function listCompanies(query = {}, currentUser) {
   ]);
 
   return {
-    items: items.map((c) => ({
-      ...c,
-      company_size: formatCompanySize(c.company_size)
-    })),
+    items: items.map(formatCompanyRecord),
     meta: buildMeta(page, limit, total)
   };
 }
@@ -263,10 +281,7 @@ async function getCompanyById(id, currentUser) {
     throw new ApiError(404, 'Company profile not found');
   }
 
-  return {
-    ...company,
-    company_size: formatCompanySize(company.company_size)
-  };
+  return formatCompanyRecord(company);
 }
 
 /**
@@ -366,7 +381,7 @@ async function verifyCompany(id, { action, remark }, currentUser, req = null) {
     req
   });
 
-  return updated;
+  return formatCompanyRecord(updated);
 }
 
 /**
@@ -392,12 +407,21 @@ async function updateCompany(id, data, currentUser, req = null) {
   if (payload.company_size !== undefined) {
     payload.company_size = normalizeCompanySize(payload.company_size);
   }
+  if (payload.gst_no !== undefined) {
+    payload.gst_no = normalizeTaxIdentifier(payload.gst_no);
+  }
+  if (payload.pan_no !== undefined) {
+    payload.pan_no = normalizeTaxIdentifier(payload.pan_no);
+  }
+  if (payload.cin_no !== undefined) {
+    payload.cin_no = normalizeTaxIdentifier(payload.cin_no);
+  }
 
   // Ruling 3.9: If approved and key legal identifiers are altered, flag for re-verification
   if (existing.status === 'approved') {
     const isNameChanged = data.company_name && data.company_name.trim() !== existing.company_name;
-    const isGstChanged = data.gst_no && data.gst_no.trim() !== existing.gst_no;
-    const isPanChanged = data.pan_no && data.pan_no.trim() !== existing.pan_no;
+    const isGstChanged = payload.gst_no && payload.gst_no !== (existing.gst_no ? existing.gst_no.toUpperCase() : null);
+    const isPanChanged = payload.pan_no && payload.pan_no !== (existing.pan_no ? existing.pan_no.toUpperCase() : null);
 
     if (isNameChanged || isGstChanged || isPanChanged) {
       payload.needs_reverification = true;
@@ -433,7 +457,7 @@ async function updateCompany(id, data, currentUser, req = null) {
     req
   });
 
-  return updated;
+  return formatCompanyRecord(updated);
 }
 
 async function addCompanyDocument(companyId, file, docType, currentUser) {

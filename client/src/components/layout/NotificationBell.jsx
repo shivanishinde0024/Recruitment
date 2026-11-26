@@ -13,16 +13,7 @@ export default function NotificationBell() {
   const isPollingRef = useRef(true);
 
   const fetchNotifications = async () => {
-    if (!isPollingRef.current) return;
-
-    // Check if authentication credentials exist before initiating request
-    const hasToken =
-      (typeof localStorage !== 'undefined' && (localStorage.getItem('access_token') || localStorage.getItem('refresh_token'))) ||
-      (typeof document !== 'undefined' && document.cookie.includes('access_token='));
-    if (!hasToken) {
-      isPollingRef.current = false;
-      return;
-    }
+    if (!isPollingRef.current || !user) return;
 
     try {
       const res = await api.get('/notifications?limit=10');

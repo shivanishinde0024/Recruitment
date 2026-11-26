@@ -448,12 +448,19 @@ async function streamResume(id, currentUser) {
   const candidateId = inMem ? id : BigInt(id);
 
   const candidate = await prisma.candidates.findFirst({
-    where: { id: candidateId, deleted_at: null }
+    where: { id: candidateId, deleted_at: null },
+    include: {
+      ...(inMem
+        ? { skills: { include: { skill: true } } }
+        : { candidate_skills: { include: { skill: true } } })
+    }
   });
 
   if (!candidate || !candidate.resume_path) {
     throw new ApiError(404, 'Resume file not found for candidate');
   }
+
+  let isConfirmed = false;
 
   // Multi-tenant authorization
   if (currentUser?.role === 'company') {
@@ -467,13 +474,16 @@ async function streamResume(id, currentUser) {
     if (!isMapped) {
       throw new ApiError(404, 'Resume file not found');
     }
+    isConfirmed = isMapped.status === 'confirmed';
   }
 
+  const formattedCandidate = sanitizeCandidateForUser(formatCandidate(candidate), currentUser, isConfirmed);
   const filename = `${candidate.name.replace(/[^a-zA-Z0-9]/g, '_')}_Resume${path.extname(candidate.resume_path) || '.pdf'}`;
   return {
     filePath: candidate.resume_path,
     filename,
-    mimeType: 'application/pdf'
+    mimeType: 'application/pdf',
+    candidate: formattedCandidate
   };
 }
 

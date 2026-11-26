@@ -62,6 +62,7 @@ exports.authenticate = async (req, res, next) => {
       companyId
     };
     req.company = company;
+    req.tokenExp = payload.exp ? payload.exp * 1000 : null;
 
     next();
   } catch (err) {

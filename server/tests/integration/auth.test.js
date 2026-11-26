@@ -91,6 +91,9 @@ describe('Integration: Authentication Module (Phase 1 / Flows F1, F12)', () => {
       expect(res.body.data.user.email).toBe('testadmin@portal.com');
       expect(res.body.data.user.role).toBe('admin');
       expect(res.body.data).toHaveProperty('token');
+      expect(typeof res.body.data.expiresAt).toBe('number');
+      expect(res.body.data.expiresAt).toBeGreaterThan(Date.now());
+      expect(typeof res.body.data.inactivityTimeoutMs).toBe('number');
 
       // Verify Cookies
       const cookies = res.headers['set-cookie'];
@@ -227,6 +230,8 @@ describe('Integration: Authentication Module (Phase 1 / Flows F1, F12)', () => {
       expect(res.body.success).toBe(true);
       expect(res.body.data).toHaveProperty('token');
       expect(res.body.data.token).not.toBe(initialAccessToken);
+      expect(typeof res.body.data.expiresAt).toBe('number');
+      expect(res.body.data.expiresAt).toBeGreaterThan(Date.now());
 
       const cookies = res.headers['set-cookie'];
       const newRfCookie = cookies.find((c) => c.startsWith('refresh_token='));
@@ -359,6 +364,8 @@ describe('Integration: Authentication Module (Phase 1 / Flows F1, F12)', () => {
       expect(meRes.status).toBe(200);
       expect(meRes.body.data.email).toBe('testadmin@portal.com');
       expect(meRes.body.data.role).toBe('admin');
+      expect(typeof meRes.body.data.sessionExpiresAt).toBe('number');
+      expect(typeof meRes.body.data.inactivityTimeoutMs).toBe('number');
     });
   });
 });

@@ -27,22 +27,26 @@ export default function FilterBar({
           </div>
         )}
 
-        {filters.map((f, idx) => (
-          <div key={idx} className="col-auto">
-            <select
-              className="form-select form-select-sm"
-              value={f.value}
-              onChange={(e) => f.onChange(e.target.value)}
-            >
-              <option value="">{f.label}</option>
-              {f.options.map((opt, oIdx) => (
-                <option key={oIdx} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        ))}
+        {filters.map((f, idx) => {
+          const hasEmptyOption = f.options.some((opt) => opt.value === '');
+          return (
+            <div key={idx} className="col-auto">
+              <select
+                className="form-select form-select-sm"
+                value={f.value}
+                onChange={(e) => f.onChange(e.target.value)}
+                aria-label={f.label}
+              >
+                {!hasEmptyOption && <option value="">{f.label}</option>}
+                {f.options.map((opt, oIdx) => (
+                  <option key={oIdx} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        })}
 
         {onReset && (
           <div className="col-auto">
